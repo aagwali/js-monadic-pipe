@@ -1,0 +1,25 @@
+{
+  "name": "basic-functionnal-pipe",
+  "version": "1.0.0",
+  "description": "basic pipe example with ramda & folktale",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "agbali",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "folktale": "^2.3.2",
+    "fs": "0.0.1-security",
+    "ramda": "^0.26.1"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.4.0",
+    "@babel/plugin-proposal-pipeline-operator": "^7.3.2",
+    "@babel/preset-env": "^7.4.2",
+    "@babel/register": "^7.4.0"
+  }
+}
