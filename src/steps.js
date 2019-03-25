@@ -12,26 +12,22 @@ import {
   concat,
   nth
 } from 'ramda'
-import {
-  Maybe,
-  Result,
-  Future,
-  futureFromCallback,
-  log,
-  logF
-} from './monads-utils'
+import * as Monad from './monads-utils'
+const Maybe = require('folktale/maybe')
+const Result = require('folktale/result')
+const Future = require('folktale/concurrency/future')
 import fs from 'fs'
 //#endregion
 
-const parseContent = initialInput =>
+export const parseContent = initialInput =>
   Result.fromMaybe(
     Maybe.fromNullable(path(['content'], initialInput)),
     'Required -content- key is missing on initial input.'
   ).fold(Future.rejected, Future.of)
 
-const fsAccess = pipe(
+export const fsAccess = pipe(
   replace('anythingUseful', './src'),
-  futureFromCallback(fs.readdir),
+  Monad.futureFromCallback(fs.readdir),
   map(
     pipe(
       filter(equals('monads-utils.js')),
@@ -39,7 +35,7 @@ const fsAccess = pipe(
       concat('./src/')
     )
   ),
-  chain(futureFromCallback(fs.readFile, 'utf8')),
+  chain(Monad.futureFromCallback(fs.readFile, 'utf8')),
   map(
     pipe(
       split('\n'),
@@ -47,5 +43,3 @@ const fsAccess = pipe(
     )
   )
 )
-
-module.exports = { parseContent, fsAccess }

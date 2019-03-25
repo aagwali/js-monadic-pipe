@@ -1,8 +1,7 @@
 //#region
-import { chain, map, pipe, tap } from 'ramda'
-const { parseContent, fsAccess } = require('./example')
-const log = tap(console.log)
-const logF = map(tap(console.log))
+import { chain, pipe } from 'ramda'
+import * as Monad from './monads-utils'
+import { parseContent, fsAccess } from './steps'
 //#endregion
 
 const msg = {
