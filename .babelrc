@@ -1,0 +1,7 @@
+{
+  "presets": ["@babel/preset-env"],
+  "plugins": [
+    ["./compose.js"],
+    ["@babel/plugin-proposal-pipeline-operator", { "proposal": "minimal" }]
+  ]
+}
