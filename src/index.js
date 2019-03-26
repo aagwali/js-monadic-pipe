@@ -1,18 +1,15 @@
 //#region
 import { chain, pipe } from 'ramda'
 import * as M from './monads-utils'
-import { tryParseContent, readUtilsFile } from './steps'
+import { tryPath, readFs } from './steps'
 //#endregion
 
-const msg = {
-    type: 'LABEL_WICH_TRIGGER_TASK',
-    content: 'anythingUseful',
-}
+const input = { content: 'valid mock folder name' }
 
 pipe(
-    tryParseContent,
-    chain(readUtilsFile)
-)(msg).listen({
+    tryPath(['content']),
+    chain(readFs)
+)(input).listen({
     onRejected: error => console.error({ error }),
     onResolved: success => console.log({ success }),
 })
