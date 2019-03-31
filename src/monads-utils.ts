@@ -10,5 +10,5 @@ export const logF = R.map(R.tap(console.log))
 export const futureFromMaybe = failureMsg => fun => val =>
     Maybe.fromUndefined(fun(val)).fold(Future.reject(failureMsg))(Future.of)
 
-export const futureFromCallback = (...fun_argOpt) => val =>
-    Future.node(done => R.head(fun_argOpt)(val, ...R.tail(fun_argOpt), done))
+// export const futureFromCallback = (...fun_argOpt) => val =>
+//     Future.node(done => R.head(fun_argOpt)(val, ...R.tail(fun_argOpt), done))
