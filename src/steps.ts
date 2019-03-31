@@ -12,9 +12,17 @@ const readdirAsync = resolveAsync(fs.readdir)
 
 const readFileAsync = resolveAsync(fs.readFile, 'utf8')
 
-const makeFilePath = filter(equals('monads-utils.js')) & head & concat('./src/') // head is failable cf.15
+const makeFilePath = pipe(
+    filter(equals('monads-utils.js')),
+    head,
+    concat('./src/')
+)
 
-const readLine = line => split('\n') & nth(line)
+const readLine = line =>
+    pipe(
+        split('\n'),
+        nth(line)
+    )
 
 export const tryReadLine = x => rejectIf(`Line does not exists : ${x}`)(readLine(x))
 
