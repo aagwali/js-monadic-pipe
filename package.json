@@ -10,9 +10,10 @@
   "author": "agbali",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.3",
-    "folktale": "^2.3.2",
+    "fluture": "^11.0.1",
     "fs": "0.0.1-security",
+    "git-cz": "^3.0.1",
+    "monet": "^0.9.0",
     "ramda": "^0.26.1"
   },
   "devDependencies": {
