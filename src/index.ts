@@ -1,12 +1,14 @@
-//#region
-import { pipe, map } from 'ramda'
-import { chain } from 'sanctuary'
+import { pipe, chain } from 'ramda'
 import { log, logF } from './monads-utils'
-import { test2, test1 } from './steps'
-//#endregion
+import { tryPath, readFs } from './steps'
+import Future from 'fluture';
+import { Either } from 'monet'
 
 const input = { content: 'valid mock folder name' }
 
-export const start = env => pipe(
-    test1,
-)(input).fork(log, x => console.log('ok success', x))
+const start =
+    Future.of(input)
+        .chain(tryPath(['content']))
+        .chain(readFs)
+        .fork(log, log)
+

@@ -1,54 +1,39 @@
-import { path, map, pipe, replace, filter, equals, head, chain, split, concat, nth, applyTo } from 'ramda'
+import { path, map, pipe, replace, find, equals, head, chain, split, concat, nth, applyTo } from 'ramda'
 import {
-    futureFromMaybe as rejectIf,
-    // futureFromCallback as resolveAsync, 
+    futureFromMaybe as rejectUndefined,
+    futureFromNodeback as resolveAsync,
     log, logF
 } from './monads-utils'
 import fs from 'fs'
 import Future from 'fluture';
+import { NEL } from 'monet'
 
 
-export const test1 = x => Future.of(x)
+export const tryPath = x => rejectUndefined(`Cannot find path : ${x}`)(path(x))
 
-export const test2 = x => {
+export const tryFind = x => rejectUndefined(`Cannot find file : ${x}`)(find(equals(x)))
 
-    console.log(x)
+const readLine = line => pipe(
+    split('\n'),
+    nth(line))
 
-    return Future.of(x)
-}
+export const tryReadLine = x => rejectUndefined(`Line does not exists : ${x}`)(readLine(x))
 
+const tryMakeFilePath = x =>
+    Future.of(x)
+        .chain(tryFind('monads-utils.ts'))
+        .map(concat('./src/'))
 
+const asyncReadFile = resolveAsync(fs.readFile, 'utf8')
 
-///////////////
+const asyncReaddir = resolveAsync(fs.readdir)
 
-// const readdirAsync = resolveAsync(fs.readdir)
+const transformInto = replace('valid mock folder name')
 
-// const readFileAsync = resolveAsync(fs.readFile, 'utf8')
-
-// const makeFilePath = pipe(
-//     filter(equals('monads-utils.js')),
-//     head,
-//     concat('./src/')
-// )
-
-// const readLine = line =>
-//     pipe(
-//         split('\n'),
-//         nth(line)
-//     )
-
-// export const tryReadLine = x => rejectIf(`Line does not exists : ${x}`)(readLine(x))
-
-// export const readLineAsync = x => rejectIf(`Line does not exists : ${x}`)(readLine(x))
-
-// export const tryPath = x => rejectIf(`Cannot find path : ${x}`)(path(x))
-
-// const transformInto = replace('valid mock folder name')
-
-// export const readFs = pipe(
-//     transformInto('./src'),
-    // readdirAsync,
-    // map(makeFilePath),
-    // chain(readFileAsync),
-    // chain(readLineAsync(1))
-// )
+export const readFs = x =>
+    Future.of(x)
+        .map(transformInto('./src'))
+        .chain(asyncReaddir)
+        .chain(tryMakeFilePath)
+        .chain(asyncReadFile)
+        .chain(tryReadLine(1))
