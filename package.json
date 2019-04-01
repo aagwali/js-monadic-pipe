@@ -4,23 +4,28 @@
   "description": "basic pipe example with ramda & folktale",
   "main": "index.js",
   "scripts": {
-    "start": "node src/app.js",
+    "ts-check": "tsc --noEmit --skipLibCheck",
+    "format": "prettier-tslint fix \"src/**/*.ts\"",
+    "start": "npx ts-node index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "agbali",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^6.0.0",
     "fluture": "^11.0.1",
     "fs": "0.0.1-security",
     "git-cz": "^3.0.1",
     "monet": "^0.9.0",
-    "ramda": "^0.26.1"
+    "prettier": "^1.16.4",
+    "prettier-tslint": "^0.4.2",
+    "ramda": "^0.26.1",
+    "sanctuary": "^1.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
-    "@babel/core": "^7.4.0",
-    "@babel/plugin-proposal-pipeline-operator": "^7.3.2",
-    "@babel/preset-env": "^7.4.2",
-    "@babel/register": "^7.4.0"
+    "@types/ramda": "^0.26.1",
+    "@types/node": "^10.12.19",
+    "ts-node": "^8.0.2",
+    "typescript": "^3.4.1"
   }
 }
