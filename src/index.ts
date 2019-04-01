@@ -1,4 +1,4 @@
-import { log, logF } from "./monads-utils";
+import { log } from "./monads-utils";
 import { tryPath, readFs } from "./steps";
 import { InitialInput } from "./types";
 import Future from "fluture";
