@@ -6,7 +6,8 @@ import {
     equals,
     split,
     concat,
-    nth
+    nth,
+    always as id
 } from "ramda";
 
 
@@ -17,45 +18,53 @@ import {
 } from "./monads-utils";
 import fs from "fs";
 import {
+    InitialInput,
+    InitialPayload,
     AppError,
-    ErrorMessages as ErrMsg
+    ErrorMessages as ErrMsg,
+    ErrorTypes as ErrTyp,
+    FileSystemResult,
+    FilePath,
+    ReadFileResult,
+
 } from "./types";
-import { Future, FutureInstance } from "fluture";
+import { Future, FutureInstance as AsyncEither, ap } from "fluture";
 
 export const readLine = line => pipe(split("\n"), nth(line));
 
-export const transformInto = replace("valid mock folder name");
-
-export const tryPath = (route: Array<string | number>) => (input: any
-): FutureInstance<AppError, any> =>
-    ifUndefined(ErrMsg.PARSE_ROUTE_FAILURE, route)(path(route))(input);
-
-export const tryFind = (search: any) => (input: Array<any>
-): FutureInstance<AppError, any> =>
+export const arrayTryFind = <T>(search: T) => (input: T[]
+): AsyncEither<AppError, T> =>
     ifUndefined(ErrMsg.FIND_ENTRY_FAILURE, search)(find(equals(search)))(input);
 
-export const tryReadLine = (line: number) => (input: Array<any>
-): FutureInstance<AppError, any> =>
-    ifUndefined(ErrMsg.FIND_ENTRY_FAILURE, line)(readLine(line))(input);
-
-export const asyncReadFile = (fileName: string
-): FutureInstance<AppError, any> =>
-    awaitResolution(fs.readFile)(["utf8"])(fileName);
-
-export const asyncReaddir = (folderpath: string
-): FutureInstance<AppError, any> =>
+export const asyncReaddir = (folderpath: InitialPayload
+): AsyncEither<AppError, FileSystemResult> =>
     awaitResolution(fs.readdir)([])(folderpath);
 
-export const tryMakeFilePath = (folderContent: string[]
-): FutureInstance<any, any> =>
+export const tryMakeFilePath = (folderContent: FileSystemResult
+): AsyncEither<AppError, FilePath> =>
     Future.of(folderContent)
-        .chain(tryFind("monads-utils.ts"))
-        .map(concat("./src/"));
+        .chain(arrayTryFind("monads-utils.ts"))
+        .map(concat("./src/"))
+        .mapRej((x: AppError) => x)
 
-export const readFs = (contentInput: string): FutureInstance<any, any> =>
-    Future.of(contentInput)
-        .map(transformInto("./src"))
+export const asyncReadFile = (filePath: FilePath
+): AsyncEither<AppError, FileSystemResult> =>
+    awaitResolution(fs.readFile)(["utf8"])(filePath);
+
+export const tryReadLine = (line: number) => (input: FileSystemResult
+): AsyncEither<AppError, ReadFileResult> =>
+    ifUndefined(ErrMsg.FIND_ENTRY_FAILURE, line)(readLine(line))(input);
+
+export const readFileSystem = (payload: InitialPayload
+): AsyncEither<AppError, ReadFileResult> =>
+    Future.of(payload)
+        .map(replace("valid mock", "./src"))
         .chain(asyncReaddir)
         .chain(tryMakeFilePath)
         .chain(asyncReadFile)
-        .chain(tryReadLine(1));
+        .chain(tryReadLine(41))
+        .mapRej((x: AppError) => x)
+
+export const tryFindPath = (route: Array<string | number>) => (input: InitialInput
+): AsyncEither<AppError, InitialPayload> =>
+    ifUndefined(ErrMsg.PARSE_ROUTE_FAILURE, route)(path(route))(input);

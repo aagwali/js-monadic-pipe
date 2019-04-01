@@ -9,23 +9,15 @@ import {
 
 export const log = R.tap(console.log);
 
-export const buildError = (x: ErrTyp, y: string, z: {} | string): AppError => {
-  return {
-    type: x,
-    functionName: y,
-    details: z
-  }
-};
-
 export const futureFromMaybe = (failureMsg: ErrMsg, target: any) => (fun: any) => (
-  input: any
+  arg: any
 ): FutureInstance<AppError, any> =>
-  Maybe.fromUndefined(fun(input)).fold
-    (Future.reject(buildError(ErrTyp.DataParsing, fun.name, `${failureMsg} "${target}"`)))
+  Maybe.fromUndefined(fun(arg)).fold
+    (Future.reject(new AppError(ErrTyp.DataParsing, fun.name, `${failureMsg} "${target}"`)))
     (Future.of);
 
 export const futureFromNodeback = (fun: any) => (optArgs: any[]) => (
-  input: any
+  mainArg: any
 ): FutureInstance<AppError, any> =>
-  node(done => fun(input, ...optArgs, done))
-    .mapRej(err => buildError(ErrTyp.Nodeback, fun.name, err));
+  node(done => fun(mainArg, ...optArgs, done))
+    .mapRej(err => new AppError(ErrTyp.Nodeback, fun.name, err));
