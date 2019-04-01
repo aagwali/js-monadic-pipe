@@ -17,6 +17,8 @@
     "fs": "0.0.1-security",
     "git-cz": "^3.0.1",
     "monet": "^0.9.0",
+    "prettier": "^1.16.4",
+    "prettier-tslint": "^0.4.2",
     "ramda": "^0.26.1",
     "sanctuary": "^1.0.0"
   },
