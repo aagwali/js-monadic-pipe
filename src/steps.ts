@@ -1,50 +1,68 @@
-import { path, pipe, replace, find, equals, split, concat, nth } from "ramda";
 import {
-    futureFromMaybe as rejectUndefined,
+    path,
+    pipe,
+    replace,
+    find,
+    equals,
+    split,
+    concat,
+    nth,
+    always as id
+} from "ramda";
+import {
+    futureFromMaybe as ifUndefined,
     futureFromNodeback as awaitResolution,
+    resolveDefault,
     log,
-    logF
-} from "./monads-utils";
+} from "./monadic-api";
 import fs from "fs";
-import { Future, FutureInstance } from "fluture";
+import {
+    InitialInput,
+    InitialPayload,
+    AppError,
+    ErrorLocations as errAt,
+    FileSystemResult,
+    FilePath,
+    ReadFileResult,
 
-export const tryPath = (route: Array<string | number>) => (
-    input: any
-): FutureInstance<string, any> =>
-    rejectUndefined(`Route Parsing failure : ${route}`)(path(route))(input);
-
-export const tryFind = (target: any) => (
-    input: Array<any>
-): FutureInstance<string, any> =>
-    rejectUndefined(`Cannot find file : ${target}`)(find(equals(target)))(input);
+} from "./types";
+import { Future, FutureInstance as AsyncEither, ap } from "fluture";
 
 export const readLine = line => pipe(split("\n"), nth(line));
 
-export const tryReadLine = (line: number) => (input: Array<any>
-): FutureInstance<string, any> =>
-    rejectUndefined(`Line does not exists : ${line}`)(readLine(line))(input);
+export const tryFindInArray = <T>(search: T) => (input: T[]
+): AsyncEither<AppError, T> =>
+    ifUndefined(errAt.TRY_FIND_IN_ARRAY, search)(find(equals(search)))(input);
 
-export const tryMakeFilePath = (folderContent: string[]
-): FutureInstance<any, any> =>
+export const asyncReaddir = (folderpath: InitialPayload
+): AsyncEither<AppError, FileSystemResult> =>
+    awaitResolution(fs.readdir)([])(folderpath);
+
+export const tryMakeFilePath = (folderContent: FileSystemResult
+): AsyncEither<AppError, FilePath> =>
     Future.of(folderContent)
-        .chain(tryFind("monads-utils.ts"))
-        .map(concat("./src/"));
+        .chain(tryFindInArray("monadic-api.ts")).chainRej(resolveDefault("fallback.ts"))
+        .map(concat("./src/"))
+        .mapRej((x: AppError) => x)
 
-export const asyncReadFile = (fileName: string
-): FutureInstance<string, any> =>
-    awaitResolution(fs.readFile, "utf8")(fileName);
+export const asyncReadFile = (filePath: FilePath
+): AsyncEither<AppError, FileSystemResult> =>
+    awaitResolution(fs.readFile)(["utf8"])(filePath);
 
-export const asyncReaddir = (folderpath: string
-): FutureInstance<string, any> =>
-    awaitResolution(fs.readdir)(folderpath);
+export const tryReadLine = (line: number) => (input: FileSystemResult
+): AsyncEither<AppError, ReadFileResult> =>
+    ifUndefined(errAt.TRY_READ_LINE, line)(readLine(line))(input);
 
-export const transformInto = replace("valid mock folder name");
-
-export const readFs = (contentInput: string
-): FutureInstance<any, any> =>
-    Future.of(contentInput)
-        .map(transformInto("./src"))
+export const readFileSystem = (payload: InitialPayload
+): AsyncEither<AppError, ReadFileResult> =>
+    Future.of(payload)
+        .map(replace("valid mock", "./src"))
         .chain(asyncReaddir)
         .chain(tryMakeFilePath)
         .chain(asyncReadFile)
-        .chain(tryReadLine(1));
+        .chain(tryReadLine(0))
+        .mapRej((x: AppError) => x)
+
+export const tryFindPath = (route: Array<string | number>) => (input: InitialInput
+): AsyncEither<AppError, InitialPayload> =>
+    ifUndefined(errAt.TRY_FIND_PATH, route)(path(route))(input)
