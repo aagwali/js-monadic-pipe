@@ -7,7 +7,7 @@ import {
   ErrorLocations,
   buildError,
   getErrorLocation
-} from "./types";
+} from "./errors";
 
 export const log = R.tap(console.log);
 
