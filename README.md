@@ -9,7 +9,7 @@ Entire app runs on [TypeScript](https://www.typescriptlang.org/).
   - Get specific prop of an input object using configuration "REQUIRED_PROP".
   - Perform asynchronous directory reading of "REQUIRED_PROP" input value.
   - Perform asynchronous file reading of configuration "FILE_NAME" in directory ; if file doesn't exists, fallback on configuration "FILE_NAME_FALLBACK".
-  - Returns specific line using configuration "FILE_LINE"
+  - Returns specific line using configuration "FILE_LINE".
 
 #### Error handling system is inspired by Railroad Oriented Programming [Talk](https://vimeo.com/97344498) of Scott Washlin
 
