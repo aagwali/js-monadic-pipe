@@ -11,6 +11,12 @@ Objective here is to build **a pipe with minimal code and maximal readability**,
 
 This repo contains a sample application trying to achieve this goal.
 
+#### Installation :
+  - Clone project
+  - Rename ".envExample" to ".env"
+  - Run "npm i"
+  - Run "npm run start"
+
 ##### Performed actions : 
   - Build a mandatory set of configuration keys from [dotEnv](https://www.npmjs.com/package/dotenv).
   - Get specific prop of an input object using configuration "REQUIRED_PROP".
