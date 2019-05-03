@@ -16,6 +16,12 @@ This repo contains a sample application trying to achieve this goal.
   - Rename ".envExample" to ".env"
   - Run "npm i"
   - Run "npm run start"
+  
+#### Usage :
+  - Try to modify .env keys or values.
+  - Try to add logs (cf. description).
+  - Try to add new expressions in computation, using monadic api.
+  - Try to break things...
 
 ##### Performed actions : 
   - Build a mandatory set of configuration keys from [dotEnv](https://www.npmjs.com/package/dotenv).
