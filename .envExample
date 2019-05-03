@@ -1,0 +1,4 @@
+REQUIRED_PROP = folder
+FILE_NAME = monadic-api.ts
+FILE_NAME_FALLBACK = fallback.ts
+FILE_LINE = 0
