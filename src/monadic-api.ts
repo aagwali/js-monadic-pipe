@@ -1,30 +1,32 @@
 /* ٭ ★ This is a clEAN WAy to ride A pipe ★ ٭ */
-import { Maybe, Either, Validation } from "monet";
-import { Future, node, FutureInstance, Nodeback } from "fluture";
-import R from "ramda";
-import {
-  AppError,
-  ErrorLocations,
-  buildError,
-  getErrorLocation
-} from "./errors";
+import { Maybe, Either, Validation } from 'monet'
+import { Future, node, FutureInstance, Nodeback, encaseP } from 'fluture'
+import R from 'ramda'
+import { AppError, ErrorLocations, buildError } from './errors'
 
-export const resolveDefault = <T>(defaultVal: T) => R.always(Future.of(defaultVal))
+export const resolveDefault = <T>(defaultVal: T) =>
+  R.always(Future.of(defaultVal))
 
 export const validationFromMaybe = (val: any) => (fun: any) => (
   match: any
 ): Validation<any, any> =>
   Maybe.fromUndefined(fun(match, val)).toValidation([match])
 
-export const futureFromMaybe = (errAt: ErrorLocations, details: any) => (fun: any) => (
-  arg: any
-): FutureInstance<AppError, any> =>
-  Maybe.fromUndefined(fun(arg)).fold
-    (Future.reject(buildError(errAt, details)))
-    (Future.of);
+export const futureFromMaybe = (errAt: ErrorLocations, details: any) => (
+  fun: any
+) => (arg: any): FutureInstance<AppError, any> =>
+  Maybe.fromUndefined(fun(arg)).fold(Future.reject(buildError(errAt, details)))(
+    Future.of
+  )
 
-export const futureFromNodeback = (fun: Nodeback<any, any>) => (optArgs: any[]) => (
-  mainArg: any
-): FutureInstance<AppError, any> =>
-  node(done => fun(mainArg, ...optArgs, done))
-    .mapRej(err => buildError(getErrorLocation(fun.name), err))
+export const futureFromNodeback = (errAt: ErrorLocations) => (
+  fun: Nodeback<any, any>
+) => (mainArg: any) => (optArgs: any[]): FutureInstance<AppError, any> =>
+  node(done => fun(mainArg, ...optArgs, done)).mapRej(err =>
+    buildError(errAt, err)
+  )
+
+export const futureFromPromise = (errAt: ErrorLocations) => (
+  fun: (a: any) => Promise<any>
+) => (mainArg: any): FutureInstance<AppError, any> =>
+  encaseP(fun, mainArg).mapRej(err => buildError(errAt, err))

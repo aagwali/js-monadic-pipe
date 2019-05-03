@@ -12,6 +12,7 @@
   "author": "agbali",
   "license": "MIT",
   "dependencies": {
+    "bull": "^3.8.1",
     "dotenv": "^6.2.0",
     "fluture": "^11.0.1",
     "fs": "0.0.1-security",
