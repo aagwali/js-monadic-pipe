@@ -49,8 +49,9 @@ This repo contains a sample application trying to achieve this goal.
   
 #### Validating requirements :
   - Initial dotEnv/Config validation is enforce by a mandatory mapping in types.ts.
-  - Logs can be added at any point of computation by adding ".map(log)" using "log" from utils.ts.
   
+#### Logging :
+  - Logs can be added at any point of computation by adding ".map(log)" using "log" from utils.ts.  
   
   
 
