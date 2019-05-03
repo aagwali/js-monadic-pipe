@@ -23,9 +23,14 @@ This repo contains a sample application trying to achieve this goal.
   - Application chains two computations : Validation > Future.
   - Computations are triggered by "fold" and "fork" methods wich act as exit points.
   - Errors/Continuation behaviour is handled with "chain" and "map" methods.
+  
   - All asynchronous and failable expressions are safely executed in relevant Functor's contexes.
   - Pre-designed Functor's contexes are provided in monadic-api.ts to minimize boilerplate code in main business.
-  - Using monadic-api force registration of each potential failure in error building system.
+  
+  - Pre-designed Functor are bounded to an Error/Success building business. 
+  - Using monadic-api functions force registration of each potential failure in errors.ts.
+  - Error building file act as documentation all potential failure.
+  
   - Initial dotEnv/Config validation is enforce by a mandatory mapping in types.ts.
   - Logs can be added at any point of computation by adding ".map(log)" using "log" from utils.ts.
   
