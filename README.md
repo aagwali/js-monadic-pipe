@@ -18,19 +18,24 @@ This repo contains a sample application trying to achieve this goal.
   - Perform asynchronous file reading of configuration "FILE_NAME" in directory ; if file doesn't exists, fallback on configuration "FILE_NAME_FALLBACK".
   - Returns specific file line using configuration "FILE_LINE".
   
-#### Description :
+### Description :
+#### Main application flow :
   - Entry point is app.ts.
   - Application chains two computations : Validation > Future.
   - Computations are triggered by "fold" and "fork" methods wich act as exit points.
   - Errors/Continuation behaviour is handled with "chain" and "map" methods.
-  
+  - Fallback behaviour uses "mapRej" method.
+
+#### Converting to the flow :
   - All asynchronous and failable expressions are safely executed in relevant Functor's contexes.
   - Pre-designed Functor's contexes are provided in monadic-api.ts to minimize boilerplate code in main business.
   
+#### Formatting Outputs :
   - Pre-designed Functor are bounded to an Error/Success building business. 
   - Using monadic-api functions force registration of each potential failure in errors.ts.
   - Error building file act as documentation all potential failure.
   
+#### Validating requirements :
   - Initial dotEnv/Config validation is enforce by a mandatory mapping in types.ts.
   - Logs can be added at any point of computation by adding ".map(log)" using "log" from utils.ts.
   
