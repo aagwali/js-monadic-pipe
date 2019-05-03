@@ -3,6 +3,13 @@
 Sample application using Future from [Fluture](https://github.com/fluture-js/Fluture), Validation and Maybe from [monet.js](https://github.com/monet/monet.js/tree/master).
 Entire app runs on [TypeScript](https://www.typescriptlang.org/).
 
+### Problematic :
+
+If your are familiar with functionnal programming you may have encounter the "Either" structure, even if you are not, you probably have been manipulating similar behaviors when using "Promises" for example.
+
+Objective here is to build **a pipe with minimal code and maximal readability**, where all expressions are executed in a single formatted distributed Left/Right structure, to handle Error/Success.
+
+This repo contains a sample application trying to achieve this goal.
 
 ##### Performed actions : 
   - Build a mandatory set of configuration keys from [dotEnv](https://www.npmjs.com/package/dotenv).
@@ -13,10 +20,9 @@ Entire app runs on [TypeScript](https://www.typescriptlang.org/).
   
 #### Description :
   - Entry point is app.ts.
-  - App chains two computations : Validation > Future.
-  - Functions "fold" and "fork" trigger each computation and act as exit points.
-  - Exit points are formatted with Success/Error builders.
-  - Continuation behaviour is handled with "chain" and "map".
+  - Application chains two computations : Validation > Future.
+  - Computations are triggered by "fold" and "fork" methods wich act as exit points.
+  - Errors/Continuation behaviour is handled with "chain" and "map" methods.
   - All asynchronous and failable expressions are safely executed in relevant Functor's contexes.
   - Pre-designed Functor's contexes are provided in monadic-api.ts to minimize boilerplate code in main business.
   - Using monadic-api force registration of each potential failure in error building system.
