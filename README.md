@@ -5,6 +5,7 @@ This application parses input data, and read a line of a file in a directory, us
 
 Error handling system is inspired by Railroad Oriented Talk of Scott Washlin:
 https://vimeo.com/97344498
+
 Validation Usage implementation details :
 https://tech.evojam.com/2016/04/26/practical-intro-to-monads-in-javascript-validation/
 
