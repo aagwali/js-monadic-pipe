@@ -61,4 +61,4 @@ This repo contains a sample application trying to achieve this goal.
 
 #### Basic Future understanding in this short Pr Frisby's [video](https://vimeo.com/106008027).
 
-#### For a complete tour of js fuinctionnal thinking, you can follow this Pr Frisby's [eggHead course](https://egghead.io/courses/professor-frisby-introduces-composable-functional-javascript) (need an egghead account), or read his full [Guide](https://github.com/MostlyAdequate/mostly-adequate-guide).
+#### For a complete tour of js functionnal thinking, you can follow this Pr Frisby's [eggHead course](https://egghead.io/courses/professor-frisby-introduces-composable-functional-javascript) (need an egghead account), or read his full [Guide](https://github.com/MostlyAdequate/mostly-adequate-guide).
