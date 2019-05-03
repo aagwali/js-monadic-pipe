@@ -1,7 +1,7 @@
 import {
     path,
+    __,
     pipe,
-    replace,
     find,
     equals,
     split,
@@ -9,21 +9,17 @@ import {
     nth,
     always as id
 } from "ramda";
+import { AppError, ErrorLocations as errAt } from "./errors"
+import { log } from "./utils";
 import {
     futureFromMaybe as ifUndefined,
     futureFromNodeback as awaitResolution,
     resolveDefault,
-    log,
 } from "./monadic-api";
 import fs from "fs";
 import {
     InitialInput,
-    InitialPayload,
-    AppError,
-    ErrorLocations as errAt,
-    FileSystemResult,
-    FilePath,
-    ReadFileResult,
+    Config,
 
 } from "./types";
 import { Future, FutureInstance as AsyncEither, ap } from "fluture";
@@ -34,35 +30,35 @@ export const tryFindInArray = <T>(search: T) => (input: T[]
 ): AsyncEither<AppError, T> =>
     ifUndefined(errAt.TRY_FIND_IN_ARRAY, search)(find(equals(search)))(input);
 
-export const asyncReaddir = (folderpath: InitialPayload
-): AsyncEither<AppError, FileSystemResult> =>
+export const asyncReaddir = (folderpath: string
+): AsyncEither<AppError, string[]> =>
     awaitResolution(fs.readdir)([])(folderpath);
 
-export const tryMakeFilePath = (folderContent: FileSystemResult
-): AsyncEither<AppError, FilePath> =>
+export const tryMakeFilePath = ({ fileName, fileName_fallback }: Config) => (folderContent: string[]
+): AsyncEither<AppError, string> =>
     Future.of(folderContent)
-        .chain(tryFindInArray("monadic-api.ts")).chainRej(resolveDefault("fallback.ts"))
-        .map(concat("./src/"))
+        .chain(tryFindInArray(fileName)).chainRej(resolveDefault(fileName_fallback))
+        .map(concat(`./src/`))
         .mapRej((x: AppError) => x)
 
-export const asyncReadFile = (filePath: FilePath
-): AsyncEither<AppError, FileSystemResult> =>
+export const asyncReadFile = (filePath: string
+): AsyncEither<AppError, string[]> =>
     awaitResolution(fs.readFile)(["utf8"])(filePath);
 
-export const tryReadLine = (line: number) => (input: FileSystemResult
-): AsyncEither<AppError, ReadFileResult> =>
+export const tryReadLine = (line: number) => (input: string[]
+): AsyncEither<AppError, string> =>
     ifUndefined(errAt.TRY_READ_LINE, line)(readLine(line))(input);
 
-export const readFileSystem = (payload: InitialPayload
-): AsyncEither<AppError, ReadFileResult> =>
+export const readFileSystem = (config: Config) => (payload: string
+): AsyncEither<AppError, string> =>
     Future.of(payload)
-        .map(replace("valid mock", "./src"))
+        .map(concat("./"))
         .chain(asyncReaddir)
-        .chain(tryMakeFilePath)
+        .chain(tryMakeFilePath(config))
         .chain(asyncReadFile)
-        .chain(tryReadLine(0))
+        .chain(tryReadLine(Number(config.fileLine)))
         .mapRej((x: AppError) => x)
 
 export const tryFindPath = (route: Array<string | number>) => (input: InitialInput
-): AsyncEither<AppError, InitialPayload> =>
+): AsyncEither<AppError, string> =>
     ifUndefined(errAt.TRY_FIND_PATH, route)(path(route))(input)

@@ -1,3 +1,3 @@
 require("ts-node").register();
 require("dotenv").config();
-require("./src/app").start;
+require("./src/app").validateConfig();
