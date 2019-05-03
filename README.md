@@ -1,13 +1,18 @@
-# js-monadic-pipe
-Sandbox for monadic pipe training with error handling
+# Js-Monadic-Pipe
 
-This application parses input data, and read a line of a file in a directory, using Future (from fluture), Maybe and Validation from monet-js.
+Sample application using Future from [Fluture](https://github.com/fluture-js/Fluture), Validation and Maybe from [monet.js](https://github.com/monet/monet.js/tree/master).
+Entire app runs on [TypeScript](https://www.typescriptlang.org/).
 
-Error handling system is inspired by Railroad Oriented Talk of Scott Washlin:
-https://vimeo.com/97344498
 
-Validation Usage implementation details :
-https://tech.evojam.com/2016/04/26/practical-intro-to-monads-in-javascript-validation/
+##### Performed actions : 
+  - Build a mandatory set of configuration keys from [dotEnv](https://www.npmjs.com/package/dotenv).
+  - Get specific prop of an input object using configuration "REQUIRED_PROP".
+  - Perform asynchronous directory reading of "REQUIRED_PROP" input value.
+  - Perform asynchronous file reading of configuration "FILE_NAME" in directory ; if file doesn't exists, fallback on configuration "FILE_NAME_FALLBACK".
+  - Returns specific line using configuration "FILE_LINE"
 
+#### Error handling system is inspired by Railroad Oriented Programming [Talk](https://vimeo.com/97344498) of Scott Washlin
+
+#### Validation Usage implementation [details](https://tech.evojam.com/2016/04/26/practical-intro-to-monads-in-javascript-validation/) :
 
 Entire project run on typescript.
