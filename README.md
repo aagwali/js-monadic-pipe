@@ -13,6 +13,4 @@ Entire app runs on [TypeScript](https://www.typescriptlang.org/).
 
 #### Error handling system is inspired by Railroad Oriented Programming [Talk](https://vimeo.com/97344498) of Scott Washlin
 
-#### Validation Usage implementation [details](https://tech.evojam.com/2016/04/26/practical-intro-to-monads-in-javascript-validation/) :
-
-Entire project run on typescript.
+#### Validation Usage implementation [details](https://tech.evojam.com/2016/04/26/practical-intro-to-monads-in-javascript-validation/)
