@@ -1,12 +1,16 @@
-import { log } from "./monadic-api";
 import { readFileSystem, tryFindPath } from "./steps";
-import { InitialInput, ReadFileResult, AppSuccess } from "./types";
+import { tryBuildConfig, log } from "./utils";
+import { InitialInput, AppSuccess, Config } from "./types";
 import Future from "fluture";
 
-const input: InitialInput = { content: "valid mock" };
+const input: InitialInput = { folder: "src" };
 
-const start = Future.of(input)
-    .chain(tryFindPath(["content"]))
-    .chain(readFileSystem)
-    .map((x: ReadFileResult): AppSuccess => new AppSuccess(x))
-    .fork(log, log);
+const start = (config: Config) =>
+    Future.of(input)
+        .chain(tryFindPath([config.requiredProp]))
+        .chain(readFileSystem(config))
+        .map(x => new AppSuccess(x))
+        .fork(log, log);
+
+export const validateConfig = () => tryBuildConfig(process.env)
+    .fold(log, start)
