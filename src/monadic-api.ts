@@ -1,6 +1,6 @@
 /* ٭ ★ This is a clEAN WAy to ride A pipe ★ ٭ */
 import { Maybe, Either, Validation } from 'monet'
-import { Future, node, FutureInstance, Nodeback, encaseP } from 'fluture'
+import { Future, node, FutureInstance, Nodeback, encaseP, tryP } from 'fluture'
 import R from 'ramda'
 import { AppError, ErrorLocations, buildError } from './errors'
 
@@ -18,6 +18,11 @@ export const futureFromMaybe = (errAt: ErrorLocations, details: any) => (
   Maybe.fromUndefined(fun(arg)).fold(Future.reject(buildError(errAt, details)))(
     Future.of
   )
+
+export const promisesToDefaultFuture = <T>(defaultVal: T) => (
+  promises: Promise<any>[]
+): FutureInstance<any, T> =>
+  tryP(() => Promise.all(promises).then(R.always(defaultVal)))
 
 export const futureFromNodeback = (errAt: ErrorLocations) => (
   fun: Nodeback<any, any>

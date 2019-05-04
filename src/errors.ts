@@ -13,6 +13,9 @@ export enum ErrorLocations {
   TRY_READ_LINE = 'tryReadLine',
   VALIDATE_ENV_KEY = 'validateEnvKeys',
   TRY_UPSERT_BULL_MSG = 'tryUpsertBullMsg',
+  BROWSE_SUPPLIER_TEMP = 'browseMsSupplierFolder',
+  GET_TASK_LIST = 'getTaskList',
+  UNLINK_FILES = 'unlinkFile',
   UNKNOWN = '⚠ unregistered error ⚠'
 }
 
@@ -67,6 +70,18 @@ export const buildError = (loc: ErrorLocations, details: any): AppError => {
       }"`
       break
     case ErrorLocations.TRY_UPSERT_BULL_MSG:
+      appError.type = ErrorType.PROMISE
+      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
+      break
+    case ErrorLocations.BROWSE_SUPPLIER_TEMP:
+      appError.type = ErrorType.NODEBACK
+      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
+      break
+    case ErrorLocations.GET_TASK_LIST:
+      appError.type = ErrorType.PROMISE
+      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
+      break
+    case ErrorLocations.UNLINK_FILES:
       appError.type = ErrorType.PROMISE
       appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
       break
