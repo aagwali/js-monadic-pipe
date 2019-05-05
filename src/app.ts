@@ -1,33 +1,32 @@
 import { Config } from './types'
 import Queue from 'bull'
 import Bull from 'bull'
-import { Future } from 'fluture'
+import { Future, bimap } from 'fluture'
 import { tryBuildConfig, log } from './utils'
 import * as Job from './jobsManagementHelper'
 import { browseMsSupplierFolder } from './steps/browseMsSupplierFolder'
-import { getTaskList } from './steps/getTaskList'
-import { deleteEndedTasks } from './steps/deleteEndedTasks'
+import { getBatches } from './steps/getBatches'
+import { buildDeletionTask, executeDeletionTask } from './steps/deleteAssets'
 
-const run = (config: Config, queue: Bull.Queue<any>) => {
-  const startTime = new Date()
+const run = (κ: Config, queue: Bull.Queue<any>, startTime: Date) =>
   queue.process(
     (job: Bull.Job<any>, acknowledge: Bull.DoneCallback): void => {
-      Future.of(config.supplierPath)
+      Future.of(κ.supplierPath)
         .chain(browseMsSupplierFolder)
-        .chain(getTaskList(config.fileExporterUri))
-        .chain(deleteEndedTasks(config.maxSimultaneousTask))
+        .chain(getBatches(κ.fileExporterUri))
+        .map(buildDeletionTask)
+        .chain(executeDeletionTask(κ.maxSimultaneousTasks))
         .fork(
           Job.failure(acknowledge),
           Job.success(job, acknowledge, startTime)
         )
     }
   )
-}
 
-const upsertScheduledMsg = (config: Config) =>
-  Future.of(new Queue(config.bullQueueName, config.bullRedisUrl))
-    .chain(Job.tryUpsertBullMsg(config.jobFrequency))
-    .fork(log, queue => run(config, queue))
+const upsertScheduledMsg = (κ: Config) =>
+  Future.of(new Queue(κ.bullQueueName, κ.bullRedisUrl))
+    .chain(Job.tryUpsertBullMsg(κ.jobFrequency))
+    .fork(log, queue => run(κ, queue, new Date()))
 
 export const validateConfig = () =>
   tryBuildConfig(process.env).fold(log, upsertScheduledMsg)

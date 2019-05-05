@@ -6,23 +6,17 @@ export enum ErrorType {
 }
 
 export enum ErrorLocations {
-  TRY_FIND_PATH = 'tryFindPath',
-  READDIR = 'readdir',
-  READ_FILE = 'readFile',
-  TRY_FIND_IN_ARRAY = 'tryFindInArray',
-  TRY_READ_LINE = 'tryReadLine',
   VALIDATE_ENV_KEY = 'validateEnvKeys',
   TRY_UPSERT_BULL_MSG = 'tryUpsertBullMsg',
   BROWSE_SUPPLIER_TEMP = 'browseMsSupplierFolder',
   GET_TASK_LIST = 'getTaskList',
-  UNLINK_FILES = 'unlinkFile',
+  UNLINK_FILES = 'unlink',
+  REMOVE_DIRECTORY = 'rmdir',
   UNKNOWN = '⚠ unregistered error ⚠'
 }
 
 export enum ErrorMessages {
-  PARSE_ROUTE_FAILURE = 'Unable to parse route',
   VALIDATION_FAILURE = 'Validation failed for some keys :',
-  FIND_ENTRY_FAILURE = 'Unable to find entry',
   UNKNOWN = '⚠ unregistered error ⚠'
 }
 
@@ -40,29 +34,6 @@ export class AppError {
 export const buildError = (loc: ErrorLocations, details: any): AppError => {
   const appError = new AppError(loc, details, undefined)
   switch (loc) {
-    case ErrorLocations.TRY_FIND_PATH:
-      appError.type = ErrorType.DATA_PARSING
-      appError.details = ` ⵁ  - ${ErrorMessages.PARSE_ROUTE_FAILURE} "${
-        appError.details
-      }"`
-      break
-    case ErrorLocations.TRY_FIND_IN_ARRAY:
-      appError.type = ErrorType.DATA_PARSING
-      appError.details = ` ⵁ  - ${ErrorMessages.FIND_ENTRY_FAILURE} "${
-        appError.details
-      }"`
-      break
-    case ErrorLocations.TRY_READ_LINE:
-      appError.type = ErrorType.DATA_PARSING
-      appError.details = ` ⵁ  - ${ErrorMessages.FIND_ENTRY_FAILURE} "${
-        appError.details
-      }"`
-      break
-    case ErrorLocations.READDIR:
-    case ErrorLocations.READ_FILE:
-      appError.type = ErrorType.NODEBACK
-      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
-      break
     case ErrorLocations.VALIDATE_ENV_KEY:
       appError.type = ErrorType.DATA_PARSING
       appError.details = ` ⵁ  - ${ErrorMessages.VALIDATION_FAILURE} "${
@@ -70,19 +41,14 @@ export const buildError = (loc: ErrorLocations, details: any): AppError => {
       }"`
       break
     case ErrorLocations.TRY_UPSERT_BULL_MSG:
+    case ErrorLocations.GET_TASK_LIST:
+    case ErrorLocations.UNLINK_FILES:
+    case ErrorLocations.REMOVE_DIRECTORY:
       appError.type = ErrorType.PROMISE
       appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
       break
     case ErrorLocations.BROWSE_SUPPLIER_TEMP:
       appError.type = ErrorType.NODEBACK
-      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
-      break
-    case ErrorLocations.GET_TASK_LIST:
-      appError.type = ErrorType.PROMISE
-      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
-      break
-    case ErrorLocations.UNLINK_FILES:
-      appError.type = ErrorType.PROMISE
       appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
       break
     default:

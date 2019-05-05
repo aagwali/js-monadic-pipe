@@ -5,7 +5,7 @@ import { Batch } from '../types'
 import { FutureInstance as AsyncEither } from 'fluture'
 import { postHttp } from '../apiHelper'
 
-export const getTaskList = (fileExporterUri: string) => (
+export const getBatches = (fileExporterUri: string) => (
   directoryContent: string[]
 ): AsyncEither<AppError, Batch[]> =>
   ifPromiseRejects(errAt.GET_TASK_LIST)(postHttp(fileExporterUri))({

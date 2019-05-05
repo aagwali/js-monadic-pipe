@@ -19,10 +19,13 @@ export const futureFromMaybe = (errAt: ErrorLocations, details: any) => (
     Future.of
   )
 
-export const promisesToDefaultFuture = <T>(defaultVal: T) => (
+export const promisesToDefaultValFuture = <T>(defaultVal: T) => (
   promises: Promise<any>[]
 ): FutureInstance<any, T> =>
-  tryP(() => Promise.all(promises).then(R.always(defaultVal)))
+  tryP(
+    () => Promise.all(promises).then(R.always(defaultVal))
+    // .catch(R.always(defaultVal))
+  )
 
 export const futureFromNodeback = (errAt: ErrorLocations) => (
   fun: Nodeback<any, any>
