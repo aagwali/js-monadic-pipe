@@ -23,37 +23,37 @@ export enum ErrorMessages {
 export class AppError {
   type: ErrorType
   location: string
-  details: {} | string
-  constructor(location: ErrorLocations, details: {} | string, type: ErrorType) {
+  error: Error
+  constructor(location: ErrorLocations, error: Error, type: ErrorType) {
     this.type = type
     this.location = location
-    this.details = details
+    this.error = error
   }
 }
 
-export const buildError = (loc: ErrorLocations, details: any): AppError => {
-  const appError = new AppError(loc, details, undefined)
+export const buildError = (loc: ErrorLocations, error: any): AppError => {
+  const appError = new AppError(loc, error, undefined)
   switch (loc) {
     case ErrorLocations.VALIDATE_ENV_KEY:
       appError.type = ErrorType.DATA_PARSING
-      appError.details = ` ⵁ  - ${ErrorMessages.VALIDATION_FAILURE} "${
-        appError.details
-      }"`
+      appError.error = new Error(
+        `${ErrorMessages.VALIDATION_FAILURE} "${appError.error}"`
+      )
       break
     case ErrorLocations.TRY_UPSERT_BULL_MSG:
     case ErrorLocations.GET_TASK_LIST:
     case ErrorLocations.UNLINK_FILES:
     case ErrorLocations.REMOVE_DIRECTORY:
       appError.type = ErrorType.PROMISE
-      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
+      appError.error = error
       break
     case ErrorLocations.BROWSE_SUPPLIER_TEMP:
       appError.type = ErrorType.NODEBACK
-      appError.details = ` ⧖ ➝ ⨯  "${appError.details}"`
+      appError.error = error
       break
     default:
       appError.type = ErrorType.UNKNOWN
-      appError.details = ErrorMessages.UNKNOWN
+      appError.error = error
       break
   }
   return appError

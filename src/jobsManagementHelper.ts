@@ -40,11 +40,11 @@ export const success = (
 export const failure = (acknowledge: Bull.DoneCallback) => ({
   location,
   type,
-  details
+  error
 }: AppError): void =>
   acknowledge(
     new Error(
-      ` Process failed at : ${location};\n Error type : ${type};\n Details : ${details};\n `
+      ` Process failed at : ${location};\n Error type : ${type};\n Details : ${error};\n `
     )
   )
 

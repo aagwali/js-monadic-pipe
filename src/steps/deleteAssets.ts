@@ -1,5 +1,5 @@
 import { Batch, Task, TaskStatus, DeletionTask } from '../types'
-import { ErrorLocations as errAt } from '../errors'
+import { ErrorLocations as errAt, AppError } from '../errors'
 import Future, {
   FutureInstance as AsyncEither,
   tryP as FutureOfPromise
@@ -16,12 +16,11 @@ import {
   head,
   init,
   join,
-  prop
+  prop,
+  isEmpty,
+  not
 } from 'ramda'
-import {
-  futureFromNodeback as ifNodebackRejects,
-  promisesToDefaultValFuture as awaitPromisesThenFutureOf
-} from '../monadic-api'
+import { futureFromNodeback as ifNodebackRejects } from '../monadic-api'
 import { launchProcess as executeConcurrently } from '../concurrencyHelper'
 import { log } from '../utils'
 
@@ -35,25 +34,30 @@ const endedTaskFiles: (batches: Batch[]) => string[] = pipe(
 
 const endedBatchFolders = (batches: Batch[]) =>
   batches
-    .filter(batch => all(task => task.status === TaskStatus.Ended, batch.tasks))
-    .map(batch =>
-      join('/', init(split('/', prop('sourceURI', head(batch.tasks)))))
+    .filter((b: Batch) => not(isEmpty(b.tasks)))
+    .filter((b: Batch) =>
+      all(task => task.status === TaskStatus.Ended, b.tasks)
     )
-//what if list batch empty
-//what if list task empty
+    .map((b: Batch) =>
+      join('/', init(split('/', prop('sourceURI', head(b.tasks)))))
+    )
 
 export const buildDeletionTask = (batches: Batch[]): DeletionTask =>
   new DeletionTask(endedTaskFiles(batches), endedBatchFolders(batches))
 
 const buildResults = (
-  unlinkErrors: Error[],
-  rmdirErrors: Error[],
+  unlinkErrors: AppError[],
+  rmdirErrors: AppError[],
   task: DeletionTask
 ): DeletionTask => {
+  const relevantErrors = (x: AppError) =>
+    !x.error.message.includes('ENOENT: no such file or directory, unlink')
   return {
     ...task,
-    fileDeletionErrors: unlinkErrors.map(x => x.message),
-    folderDeletionErrors: rmdirErrors.map(x => x.message)
+    fileDeletionErrors: unlinkErrors
+      .filter(relevantErrors)
+      .map(x => x.error.message),
+    folderDeletionErrors: rmdirErrors.map(x => x.error.message)
   }
 }
 

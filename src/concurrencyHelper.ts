@@ -4,13 +4,11 @@ type Consumer<T> = {
   consume: (task: T, cb: ProcessorCallback<T>) => Promise<T>
 }
 
-// doublon link with app bad
-
 type Producer<T> = {
   nextTaskIndex: number
   queue: T[]
   produce: () => T
-  results: Error[]
+  results: any[]
 }
 
 const producer: Producer<any> = {
@@ -20,16 +18,6 @@ const producer: Producer<any> = {
   results: []
 }
 
-const buildError = (err: any): Error => {
-  if (err instanceof Error) {
-    return err
-  } else {
-    const systErr = new Error(err)
-    systErr.message = err
-    return systErr
-  }
-}
-
 const consumer: Consumer<any> = {
   consume: (task, cb) => {
     if (task === undefined) return
@@ -37,7 +25,7 @@ const consumer: Consumer<any> = {
       cb(task)
         .then(() => resolve(consumer.consume(producer.produce(), cb)))
         .catch(err => {
-          producer.results.push(buildError(err))
+          producer.results.push(err)
           return resolve(consumer.consume(producer.produce(), cb))
         })
     })
@@ -48,7 +36,7 @@ export const launchProcess = <T>(
   processor: ProcessorCallback<T>,
   concurency: number,
   tasks: T[]
-): Promise<Error[]> => {
+): Promise<any[]> => {
   producer.queue = tasks
   producer.nextTaskIndex = 0
   producer.results = []
@@ -57,4 +45,4 @@ export const launchProcess = <T>(
     consumersBuilder.map(() => consumer.consume(producer.produce(), processor))
   ).then(() => producer.results)
 }
-// is err list safe ?
+// is push err list safe ?
