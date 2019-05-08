@@ -1,4 +1,6 @@
-REQUIRED_PROP = folder
-FILE_NAME = monadic-api.ts
-FILE_NAME_FALLBACK = fallback.ts
-FILE_LINE = 0
+SUPPLIER_PATH = /home/agwali/TempFolder
+BULL_QUEUE_NAME = mediashare-rawshoot-cleaner
+BULL_REDIS_URL= redis://:totototo@redis-master.bull-redis-arena-pp.pp-mediastack.vpback.dc1.fr.vpgrp.io.:6380
+JOB_FREQUENCY = 10000
+FILE_EXPORTER_URI = https://ci-media-file-exporter-api.vpback.vpgrp.io
+MAX_SIMULTANEOUS_TASKS = 5
