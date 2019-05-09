@@ -1,5 +1,5 @@
 import { Validation, IValidationAcc } from 'monet'
-import { AppError, buildError, ErrorLocations as errAt } from './errors'
+import { AppError, buildError, ErrorLocation as errAt } from './errors'
 import { Config, buildConfig, configEnvMapping } from './types'
 import { validationFromMaybe as tryValidate } from './monadic-api'
 import R from 'ramda'

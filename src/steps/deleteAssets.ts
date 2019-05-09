@@ -1,5 +1,5 @@
 import { Batch, Task, TaskStatus, DeletionTask } from '../types'
-import { ErrorLocations as errAt, AppError } from '../errors'
+import { ErrorLocation as errAt, AppError } from '../errors'
 import Future, {
   FutureInstance as AsyncEither,
   tryP as FutureOfPromise

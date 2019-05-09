@@ -80,4 +80,4 @@ export const basicAuthHeaders = (
 }
 
 export const postHttp = uri => payload =>
-  post(`${uri}/api/batches/search`, JSON.stringify(payload))
+  post(`${uri}`, JSON.stringify(payload))

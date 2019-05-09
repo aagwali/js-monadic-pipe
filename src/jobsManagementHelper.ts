@@ -1,7 +1,7 @@
 import Bull from 'bull'
 import { futureFromPromise as ifPromiseRejects } from './monadic-api'
 import { FutureInstance as AsyncEither } from 'fluture'
-import { AppError, ErrorLocations as errAt } from './errors'
+import { AppError, ErrorLocation as errAt } from './errors'
 
 export const createRepeatableMsg = (jobFrequency: string) => (
   queue: Bull.Queue<any>
