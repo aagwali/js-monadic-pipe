@@ -1,9 +1,4 @@
 import { Batch, Task, TaskStatus, DeletionTask } from '../types'
-import { ErrorLocation as errAt, AppError } from '../errors'
-import Future, {
-  FutureInstance as AsyncEither,
-  tryP as FutureOfPromise
-} from 'fluture'
 import fs from 'fs'
 import {
   filter,
@@ -18,10 +13,18 @@ import {
   join,
   prop,
   isEmpty,
-  not
+  not,
+  identity as id
 } from 'ramda'
-import { futureFromNodeback as ifNodebackRejects } from '../monadic-api'
 import { launchProcess as executeConcurrently } from '../concurrencyHelper'
+import {
+  futureFromNodeback as futurN,
+  futureOfValue as futurV,
+  formatError as throwFuturErr,
+  AsyncEither,
+  futureOfPromise as futureOfP
+} from 'ts-functors'
+import { ErrorLocation as at, AppError } from '../errors'
 import { log } from '../utils'
 
 const endedTaskFiles: (batches: Batch[]) => string[] = pipe(
@@ -46,34 +49,42 @@ export const buildDeletionTask = (batches: Batch[]): DeletionTask =>
   new DeletionTask(endedTaskFiles(batches), endedBatchFolders(batches))
 
 const buildResults = (
-  unlinkErrors: AppError[],
-  rmdirErrors: AppError[],
+  unlinkErrors: any[],
+  rmdirErrors: any[],
   task: DeletionTask
 ): DeletionTask => {
-  const relevantErrors = (x: AppError) =>
-    !x.error.message.includes('ENOENT: no such file or directory, unlink')
+  const relevantErrors = (x: Error): boolean =>
+    !x.message.includes('ENOENT: no such file or directory, unlink')
   return {
     ...task,
     fileDeletionErrors: unlinkErrors
+      .map(x => new Error(x))
       .filter(relevantErrors)
-      .map(x => x.error.message),
-    folderDeletionErrors: rmdirErrors.map(x => x.error.message)
+      .map(x => x.message),
+    folderDeletionErrors: rmdirErrors.map(x => new Error(x)).map(x => x.message)
   }
 }
 
 const unlink = (filePath: string[]): Promise<any> =>
-  ifNodebackRejects(errAt.UNLINK_FILES)(fs.unlink)(filePath)([]).promise()
+  futurN(fs.unlink)(filePath)
+    .mapRej((e: AppError) => throwFuturErr(at.UnlinkFiles)(e))
+    .promise()
 
 const rmdir = (folderPath: string[]): Promise<any> =>
-  ifNodebackRejects(errAt.REMOVE_DIRECTORY)(fs.rmdir)(folderPath)([]).promise()
+  futurN(fs.rmdir)(folderPath)
+    .mapRej((e: AppError) => throwFuturErr(at.RemoveDirectory)(e))
+    .promise()
 
 export const executeDeletionTask = (maxTasks: string) => (
   task: DeletionTask
-): AsyncEither<any, any> =>
-  FutureOfPromise(() =>
+): AsyncEither<any, DeletionTask> =>
+  futureOfP(
     executeConcurrently(unlink, Number(maxTasks), task.filePathes)
   ).chain(unlinkErrors =>
-    FutureOfPromise(() =>
+    futureOfP(
       executeConcurrently(rmdir, Number(maxTasks), task.folderPathes)
-    ).map(rmdirErrors => buildResults(unlinkErrors, rmdirErrors, task))
+    ).bimap(
+      (e: any) => throwFuturErr(at.DeletionTask)(e),
+      rmdirErrors => buildResults(unlinkErrors, rmdirErrors, task)
+    )
   )

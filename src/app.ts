@@ -1,41 +1,36 @@
 import { Config } from './types'
 import Queue from 'bull'
 import Bull from 'bull'
-import { Future, bimap } from 'fluture'
-import { tryBuildConfig, log } from './utils'
+import { futureOfValue as futurV } from 'ts-functors'
+import { log } from './utils'
+import { tryBuildConfig } from './steps/buildConfig'
 import * as Job from './jobsManagementHelper'
-import { browseMsSupplierFolder } from './steps/browseMsSupplierFolder'
-import { getBatches } from './steps/getBatches'
+import { browseSupplierDirectory } from './steps/browseSupplierDirectory'
+import { getFileExporterBatches } from './steps/getBatches'
 import { buildDeletionTask, executeDeletionTask } from './steps/deleteAssets'
-import {
-  futureFromNodeback as futurN,
-  futureFromPromise as futurP
-} from 'ts-functors'
-import fs from 'fs'
-import { AppError, ErrorLocation as step } from './errors'
-import { postHttp } from './apiHelper'
-import R from 'ramda'
+import { ErrorLocation as at, AppError } from './errors'
 
 const run = (k: Config, queue: Bull.Queue<any>, startTime: Date) =>
   queue.process(
     (job: Bull.Job<any>, acknowledge: Bull.DoneCallback): void => {
-      Future.of(k.supplierPath)
-        .chain(browseMsSupplierFolder)
-        .chain(getBatches(k.fileExporterUri))
+      futurV(k.supplierPath)
         .bimap(log, log)
+        .chain(browseSupplierDirectory)
+        .chain(getFileExporterBatches(k.fileExporterUri))
         .map(buildDeletionTask)
         .chain(executeDeletionTask(k.maxSimultaneousTasks))
+        .bimap(log, log)
         .fork(
-          Job.failure(acknowledge),
+          Job.failure((x: AppError) => acknowledge(x)),
           Job.success(job, acknowledge, startTime)
         )
     }
   )
 
 const upsertScheduledMsg = (k: Config) =>
-  Future.of(new Queue(k.bullQueueName, k.bullRedisUrl))
+  futurV(new Queue(k.bullQueueName, k.bullRedisUrl))
     .chain(Job.tryUpsertBullMsg(k.jobFrequency))
     .fork(log, queue => run(k, queue, new Date()))
 
 export const validateConfig = () =>
-  tryBuildConfig(process.env).fold(log, upsertScheduledMsg)
+  tryBuildConfig(process.env).fork(log, upsertScheduledMsg)

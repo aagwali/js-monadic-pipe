@@ -1,26 +1,30 @@
-import { map, replace, applySpec, always } from 'ramda'
-import { ErrorLocation as Location, AppError2 as AppError } from '../errors'
-import { Batch } from '../types'
+import { map, replace, applySpec, always, identity as id } from 'ramda'
+import { ErrorLocation as at, AppError } from '../errors'
+import { Batch, FileExporterPayload } from '../types'
 import { postHttp } from '../apiHelper'
 import {
   futureFromPromise as futurP,
   futureOfValue as futurV,
   AsyncEither,
-  captureError as futurErr
+  formatError as throwFuturErr
 } from 'ts-functors'
-import { mapRej } from 'fluture'
 
 export const adjustInput = map(replace('_', '-'))
 
-export const buildPayload = applySpec({
+export const buildPayload: (
+  directories: string[]
+) => FileExporterPayload = applySpec({
   limit: always(0),
   keys: adjustInput
 })
 
-export const getBatches = (fileExporterUri: string) => (
+export const getFileExporterBatches = (fileExporterUri: string) => (
   directories: string[]
 ): AsyncEither<AppError, Batch[]> =>
   futurV(directories)
     .map(buildPayload)
     .chain(futurP(postHttp(fileExporterUri)))
-    .mapRej(futurErr(Location.GetBatches))
+    .bimap(
+      (e: AppError) => throwFuturErr(at.GetBatches)(e),
+      (output: Batch[]) => id(output)
+    )

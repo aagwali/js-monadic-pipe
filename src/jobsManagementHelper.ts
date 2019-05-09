@@ -1,7 +1,12 @@
 import Bull from 'bull'
-import { futureFromPromise as ifPromiseRejects } from './monadic-api'
 import { FutureInstance as AsyncEither } from 'fluture'
-import { AppError, ErrorLocation as errAt } from './errors'
+import { AppError, ErrorLocation as at } from './errors'
+import {
+  formatError as throwFuturErr,
+  futureOfValue as futurV,
+  futureFromPromise as futurP
+} from 'ts-functors'
+import { log } from './utils'
 
 export const createRepeatableMsg = (jobFrequency: string) => (
   queue: Bull.Queue<any>
@@ -17,10 +22,18 @@ export const createRepeatableMsg = (jobFrequency: string) => (
 
 export const tryUpsertBullMsg = (jobFrequency: string) => (
   queue: Bull.Queue<any>
-): AsyncEither<AppError, any> =>
-  ifPromiseRejects(errAt.TRY_UPSERT_BULL_MSG)(
-    createRepeatableMsg(jobFrequency)
-  )(queue).map(_ => queue)
+): AsyncEither<AppError, boolean> =>
+  futurV(queue)
+    .bimap(log, log)
+    .chain(futurP(createRepeatableMsg(jobFrequency)))
+    .bimap(log, log)
+    .mapRej((e: any) => throwFuturErr(at.TryUpsertBullMsg)(e))
+    .bimap(log, log)
+    .map(_ => queue)
+
+// ifPromiseRejects(errAt.TRY_UPSERT_BULL_MSG)(createRepeatableMsg(jobFrequency))(
+//   queue
+// ).map(_ => queue)
 
 export const success = (
   job: Bull.Job<any>,
@@ -37,16 +50,8 @@ export const success = (
   })
 }
 
-export const failure = (acknowledge: Bull.DoneCallback) => ({
-  location,
-  type,
-  error
-}: AppError): void =>
-  acknowledge(
-    new Error(
-      ` Process failed at : ${location};\n Error type : ${type};\n Details : ${error};\n `
-    )
-  )
+export const failure = (acknowledge: Bull.DoneCallback) => (xx: any): void =>
+  acknowledge(new Error(` Process failed at : ${xx};\n\n `))
 
 // import { BullPublisherQueueShape } from "../types";
 // import * as Utils from "../utils";

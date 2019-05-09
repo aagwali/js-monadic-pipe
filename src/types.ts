@@ -1,6 +1,3 @@
-import R from 'ramda'
-import { AppError } from './errors'
-
 // BUSINESS TYPES
 
 export enum TaskStatus {
@@ -23,6 +20,11 @@ export type Batch = {
   tasks: Array<Task>
 }
 
+export type FileExporterPayload = {
+  limit: number
+  keys: string[]
+}
+
 export class DeletionTask {
   filePathes: string[]
   folderPathes: string[]
@@ -42,6 +44,10 @@ export class DeletionTask {
 }
 
 // CONFIG TYPES
+
+export interface Env {
+  [key: string]: string
+}
 
 // Add each dotEnv key here to link all app
 export type Config = {
