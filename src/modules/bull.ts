@@ -1,15 +1,20 @@
-import Bull from 'bull'
-import { FutureInstance as AsyncEither } from 'fluture'
 import { AppError, ErrorLocation as at } from './errors'
 import {
   formatError as throwFuturErr,
   futureOfValue as futurV,
-  futureFromPromise as futurP
+  futureFromPromise as futurP,
+  FutureInstance as Future,
+  log
 } from 'ts-functors'
-import { log } from './utils'
+import Bull from 'bull'
+import Queue from 'bull'
+import { Config } from './config'
+
+type BullQueue = Bull.Queue<any>
+type BullJob = Bull.Job<any>
 
 export const createRepeatableMsg = (jobFrequency: string) => (
-  queue: Bull.Queue<any>
+  queue: BullQueue
 ): Promise<Bull.Job<any>> =>
   queue.add(
     { repeatableJob: `Generating message every ${Number(jobFrequency)} ms` },
@@ -20,23 +25,18 @@ export const createRepeatableMsg = (jobFrequency: string) => (
     }
   )
 
-export const tryUpsertBullMsg = (jobFrequency: string) => (
-  queue: Bull.Queue<any>
-): AsyncEither<AppError, boolean> =>
-  futurV(queue)
-    .bimap(log, log)
-    .chain(futurP(createRepeatableMsg(jobFrequency)))
-    .bimap(log, log)
-    .mapRej((e: any) => throwFuturErr(at.TryUpsertBullMsg)(e))
-    .bimap(log, log)
-    .map(_ => queue)
-
-// ifPromiseRejects(errAt.TRY_UPSERT_BULL_MSG)(createRepeatableMsg(jobFrequency))(
-//   queue
-// ).map(_ => queue)
+export const upsertScheduledMsg = (
+  k: Config
+): Future<AppError, [Config, BullQueue]> =>
+  futurV(new Queue(k.bullQueueName, k.bullRedisUrl))
+    .chain(futurP(createRepeatableMsg(k.jobFrequency)))
+    .bimap(
+      (e: any) => throwFuturErr(at.UpsertBullMsg)(e),
+      ({ queue }: BullJob): BullQueue => [k, queue]
+    )
 
 export const success = (
-  job: Bull.Job<any>,
+  job: BullJob,
   acknowledge: Bull.DoneCallback,
   startTime: Date
 ) => (result: any): void => {

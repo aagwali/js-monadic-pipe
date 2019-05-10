@@ -1,13 +1,18 @@
 import R from 'ramda'
 import fetch, { Headers } from 'node-fetch'
 import { Base64 } from 'js-base64'
-import { JSONResponse } from './types'
 
 type BasicFetchPayload = {
   url: string
   method: 'POST' | 'GET'
   config: Object
   extraAcceptedStatus: Array<number>
+}
+
+export type JSONResponse<J> = {
+  json: () => Promise<J>
+  statusText: string
+  status: string
 }
 
 const baseFetch = ({
@@ -79,5 +84,5 @@ export const basicAuthHeaders = (
   return headers
 }
 
-export const postHttp = uri => payload =>
+export const postHttp = <T>(uri: string) => (payload: T) =>
   post(`${uri}`, JSON.stringify(payload))

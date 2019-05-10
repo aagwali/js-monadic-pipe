@@ -45,4 +45,3 @@ export const launchProcess = <T>(
     consumersBuilder.map(() => consumer.consume(producer.produce(), processor))
   ).then(() => producer.results)
 }
-// is push err list safe ?

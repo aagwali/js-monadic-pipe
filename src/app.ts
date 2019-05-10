@@ -1,36 +1,40 @@
-import { Config } from './types'
-import Queue from 'bull'
+import * as Config from './modules/config'
 import Bull from 'bull'
-import { futureOfValue as futurV } from 'ts-functors'
-import { log } from './utils'
-import { tryBuildConfig } from './steps/buildConfig'
-import * as Job from './jobsManagementHelper'
-import { browseSupplierDirectory } from './steps/browseSupplierDirectory'
-import { getFileExporterBatches } from './steps/getBatches'
-import { buildDeletionTask, executeDeletionTask } from './steps/deleteAssets'
-import { ErrorLocation as at, AppError } from './errors'
+import { futureOfValue as futurV, log, logx, FutureInstance } from 'ts-functors'
+import { buildConfig } from './modules/config'
+import * as BullManagment from './modules/bull'
+import * as MsBuffer from './modules/mediashareBuffer'
+import * as FileExporter from './modules/fileExporter'
+import * as Deletion from './modules/deletion'
+import { AppError, offline } from './modules/errors'
+import { apply, always } from 'ramda'
+import { map } from 'fluture'
 
-const run = (k: Config, queue: Bull.Queue<any>, startTime: Date) =>
-  queue.process(
-    (job: Bull.Job<any>, acknowledge: Bull.DoneCallback): void => {
-      futurV(k.supplierPath)
-        .bimap(log, log)
-        .chain(browseSupplierDirectory)
-        .chain(getFileExporterBatches(k.fileExporterUri))
-        .map(buildDeletionTask)
-        .chain(executeDeletionTask(k.maxSimultaneousTasks))
-        .bimap(log, log)
-        .fork(
-          Job.failure((x: AppError) => acknowledge(x)),
-          Job.success(job, acknowledge, startTime)
-        )
-    }
-  )
+const run = (startTime: Date) => (k: Config.Config) =>
+  // const run = (startTime: Date) => (k: Config.Config, queue: Bull.Queue<any>) =>
+  // queue.process(
+  // (job: Bull.Job<any>, acknowledge: Bull.DoneCallback): void => {
+  MsBuffer.browseDirectories(k.rawshootPath)
+    .map(FileExporter.buildPayload)
+    // .chain(FileExporter.getBatches(k.fileExporterUri))
+    .map(always(offline))
+    .map(Deletion.buildTask)
+    .chain(Deletion.executeTask(k.maxSimultaneousTasks))
+    // .fork(
+    //   BullManagment.failure((x: boolean) => acknowledge(x)),
+    //   BullManagment.success(job, acknowledge, startTime)
+    // )
+    .fork(log, log)
 
-const upsertScheduledMsg = (k: Config) =>
-  futurV(new Queue(k.bullQueueName, k.bullRedisUrl))
-    .chain(Job.tryUpsertBullMsg(k.jobFrequency))
-    .fork(log, queue => run(k, queue, new Date()))
+// }
+// )
 
-export const validateConfig = () =>
-  tryBuildConfig(process.env).fork(log, upsertScheduledMsg)
+// export const main = () =>
+//   buildConfig(Config.mapping, process.env)
+//     .chain(BullManagment.upsertScheduledMsg)
+//     .fork(log, apply(run(new Date())))
+
+export const main = () =>
+  buildConfig(Config.mapping, process.env)
+    // .chain(BullManagment.upsertScheduledMsg)
+    .fork(log, run(new Date()))
