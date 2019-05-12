@@ -1,5 +1,5 @@
 import { AppError, ErrorLocation as at } from './errors'
-import { validationFromUndefined as ValidUnd } from '../utils'
+import { ListArr, validationFromUndefined as ValidUnd } from '../utils'
 import { prop, values } from 'ramda'
 import {
   formatError as throwFuturErr,
@@ -8,9 +8,6 @@ import {
   futureRejectOfValue as futurRejV,
   log
 } from 'ts-functors'
-import { List } from 'monet' //
-const ListArr = List.fromArray //
-
 export interface Env {
   [key: string]: string
 }

@@ -18,7 +18,7 @@ import {
   identity as id,
   last
 } from 'ramda'
-import { launchProcess as executeConcurrently } from '../concurrencyHelper'
+import { launchProcess as executeConcurrently } from './concurrency'
 import {
   futureFromNodeback as futurN,
   formatError as throwFuturErr,

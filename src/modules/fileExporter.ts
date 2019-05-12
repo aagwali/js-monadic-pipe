@@ -1,10 +1,11 @@
 import { map, replace, applySpec, always, identity as id, prop } from 'ramda'
 import { ErrorLocation as at, AppError } from './errors'
-import { postHttp } from '../apiHelper'
+import { postHttp } from './http'
 import {
   futureFromPromise as futurP,
   FutureInstance,
   formatError,
+  futureOfValue as futurV,
   log
 } from 'ts-functors'
 
@@ -14,6 +15,7 @@ export enum TaskStatus {
   Failed = 'failed',
   Ended = 'ended'
 }
+import { mockFileExporter } from './mocks'
 
 export type Task = {
   id: string
@@ -45,8 +47,8 @@ export const buildPayload: (directories: string[]) => SearchPayload = applySpec(
 export const getBatches = (fileExporterUri: string) => (
   payload: SearchPayload
 ): FutureInstance<AppError, any> =>
-  futurP(postHttp(fileExporterUri))(payload)
-    .map(map(prop('tasks')))
+  // futurP(postHttp(fileExporterUri))(payload)
+  futurV(mockFileExporter)
     .bimap(log, log)
     .bimap(
       formatError(at.GetBatches),

@@ -1,4 +1,6 @@
 import { Maybe, Validation } from 'monet'
+import { List } from 'monet' //
+export const ListArr = List.fromArray //
 
 export const validationFromUndefined = <T, U>(
   fun: (val: U, payld: T) => any | undefined | null,

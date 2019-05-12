@@ -16,15 +16,10 @@ const run = (startTime: Date) => (k: Config.Config) =>
   // (job: Bull.Job<any>, acknowledge: Bull.DoneCallback): void => {
   MsBuffer.browseDirectories(k.rawshootPath)
     .map(FileExporter.buildPayload)
-    // .chain(FileExporter.getBatches(k.fileExporterUri))
-    .map(always(offline))
+    .chain(FileExporter.getBatches(k.fileExporterUri))
     .map(Deletion.buildTask)
     .chain(Deletion.executeTask(k.maxSimultaneousTasks))
-    // .fork(
-    //   BullManagment.failure((x: boolean) => acknowledge(x)),
-    //   BullManagment.success(job, acknowledge, startTime)
-    // )
-    .fork(log, log)
+// .fork(
 
 // }
 // )
@@ -37,4 +32,6 @@ const run = (startTime: Date) => (k: Config.Config) =>
 export const main = () =>
   buildConfig(Config.mapping, process.env)
     // .chain(BullManagment.upsertScheduledMsg)
-    .fork(log, run(new Date()))
+    // .fork(log, run(new Date()))
+    .chain(run(new Date()))
+    .fork(log, log)
