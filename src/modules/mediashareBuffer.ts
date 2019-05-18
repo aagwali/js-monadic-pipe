@@ -3,7 +3,7 @@ import { ErrorLocation as at, AppError } from './errors'
 import { filter } from 'ramda'
 import {
   futureFromNodeback as futurN,
-  formatError as throwFuturErr,
+  formatError as throwErr,
   FutureInstance as Future
 } from 'ts-functors'
 
@@ -15,6 +15,6 @@ const filterDirectories = (basePath: string) => (entries: string[]): string[] =>
 
 export const browseDirectories = (path: string): Future<AppError, string[]> =>
   futurN(fs.readdir)(path).bimap(
-    throwFuturErr(at.BrowseMsSupplierDirectory),
+    throwErr(at.BrowseMsSupplierDirectory),
     filterDirectories(path)
   )
