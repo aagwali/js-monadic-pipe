@@ -1,10 +1,9 @@
-import { FuturError } from 'ts-functors'
-import { prop, not, any, pick, whereEq } from 'ramda'
+import { prop } from 'ramda'
 
-export enum ErrorLocation {
-  TryBuildConfig = 'tryValidateEnvKeys failed for :',
+export enum AppFailure {
+  BuildSettings = 'Application failed to build job settings from command args',
+  BuildConfig = 'Application failed to build configuration from dotEnv',
   UpsertBullMsg = 'upsertBullMsg',
-  BrowseMsSupplierDirectory = 'browseMsSupplierDirectory',
   GetBatches = 'GetBatches',
   UnlinkFiles = 'unlinkFiles',
   RemoveDirectory = 'removeDirectory',
@@ -12,24 +11,18 @@ export enum ErrorLocation {
   UNKNOWN = '⚠ unregistered error ⚠'
 }
 
-export type Application = FuturError<ErrorLocation>
+export type AppError = {
+  applicationFailure: AppFailure
+  details: string
+}
 
-export type FileSystem = NodeJS.ErrnoException
+export const parseValidationError = x => prop('details', x).map(prop('message'))
 
-const irrelevantErrors: FileSystem[] = [
-  {
-    syscall: 'unlnk',
-    code: 'ENOENT',
-    errno: -2,
-    name: '',
-    message: ''
+export const formatError = (errLocation: AppFailure) => (
+  error: any
+): AppError => {
+  return {
+    applicationFailure: errLocation,
+    details: error
   }
-]
-
-const fsErrorKeys = ['syscall', 'code', 'errno']
-
-export const relevantError = (error: FileSystem): boolean =>
-  not(any(whereEq(pick(fsErrorKeys, error)), irrelevantErrors))
-
-export const formatErrors = (errors: FileSystem[]): string[] =>
-  errors.filter(relevantError).map(prop('message'))
+}

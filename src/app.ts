@@ -1,18 +1,13 @@
-import * as Config from './modules/generics/config'
-import { futureOfValue as futurV, log, logx, FutureInstance } from 'ts-functors'
-import { buildConfig } from './modules/generics/config'
-import * as MsBuffer from './modules/business/mediashareBuffer'
-import * as FileExporter from './modules/business/fileExporter'
-import * as Deletion from './modules/business/deletion'
+import { Config } from './modules/generics/config'
+import { buildConfig, Seq } from './modules/generics/config'
+import * as JobConfig from './modules/business/jobConfiguration'
+import { log } from './modules/generics/utlis'
 
-const run = (startTime: Date) => (k: Config.Config) =>
-  MsBuffer.browseDirectories(k.rawshootPath)
-    .map(FileExporter.buildPayload)
-    .chain(FileExporter.getBatches(k.fileExporterUri))
-    .map(Deletion.buildTask)
-    .chain(Deletion.executeTask(k.maxSimultaneousTasks))
+const args: Seq = require('yargs').argv
+
+const run = (startTime: Date) => (conf: Config) => JobConfig.buildSettings(args)
 
 export const main = () =>
-  buildConfig(Config.mapping, process.env)
+  buildConfig(process.env)
     .chain(run(new Date()))
     .fork(log, log)
