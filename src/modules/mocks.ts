@@ -1,6 +1,6 @@
-import { Task, Batch, TaskStatus } from './fileExporter'
+import { Batch, TaskStatus } from './fileExporter'
 
-export const mockFileExporter: any = [
+export const mockFileExporter: Batch[] = [
   {
     id: '5c91170432966b0016c4337c',
     scopelock: 'mediashare-exporter_EZICOM23-5116',

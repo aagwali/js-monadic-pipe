@@ -1,8 +1,5 @@
 import {
-  map,
   replace,
-  applySpec,
-  always,
   identity as id,
   split,
   join,
@@ -14,7 +11,8 @@ import {
   prop,
   all
 } from 'ramda'
-import { ErrorLocation as at, AppError } from './errors'
+import { mockFileExporter } from './mocks'
+import { ErrorLocation as at, Application as AppError } from './errors'
 import { postHttp } from './http'
 import {
   futureFromPromise as futurP,
@@ -27,8 +25,7 @@ import {
 import { List } from 'monet'
 const ListArr = List.fromArray
 
-//#region Types
-export type MsBatches = List<Batch>
+//#region Models
 
 export enum TaskStatus {
   Created = 'created',
@@ -37,7 +34,6 @@ export enum TaskStatus {
 
   Ended = 'ended'
 }
-import { mockFileExporter } from './mocks'
 
 export type Task = {
   id: string
@@ -56,36 +52,28 @@ export type SearchPayload = {
   limit: number
   keys: string[]
 }
+
+export type MsBatches = List<Batch>
+
 //#endregion
 
-export const adjustInput = map(replace('_', '-'))
-
-export const buildPayload = (directories: string[]): SearchPayload => {
-  return {
-    limit: 0,
-    keys: adjustInput(directories)
-  }
-}
-
-export const isMediashare = (b: Batch): boolean =>
-  equals('mediashare-exporter', head(split('_', prop('scopelock', b))))
-
-export const areTasksEnded = (b: Batch): boolean =>
-  all(isEnded, prop('tasks', b))
+//#region Predicates
 
 export const isEnded = (t: Task): boolean =>
   equals(TaskStatus.Ended, prop('status', t))
 
-export const extractFolderName = (b: Batch): string =>
-  join('/', init(split('/', prop('sourceURI', head(prop('tasks', b))))))
+export const areTasksEnded = (b: Batch): boolean =>
+  all(isEnded, prop('tasks', b))
 
-export const endedTasksFilePathes = (msBatches: List<Batch>): List<string> =>
-  msBatches
-    .map(prop('tasks'))
-    .map(ListArr)
-    .flatten()
-    .filter(isEnded)
-    .map((t: Task) => prop('sourceURI', t))
+export const isMediashare = (b: Batch): boolean =>
+  equals('mediashare-exporter', head(split('_', prop('scopelock', b))))
+
+//#endregion
+
+//#region Operations
+
+export const extractDirectoryPathes = (b: Batch): string =>
+  join('/', init(split('/', prop('sourceURI', head(prop('tasks', b))))))
 
 export const completeBatchDirectoryPathes = (
   batches: List<Batch>
@@ -93,15 +81,35 @@ export const completeBatchDirectoryPathes = (
   batches
     .filter((b: Batch) => not(isEmpty(prop('tasks', b))))
     .filter(areTasksEnded)
-    .map(extractFolderName)
+    .map(extractDirectoryPathes)
+
+export const endedTasksFilePathes = (batches: List<Batch>): List<string> =>
+  batches
+    .map(prop('tasks'))
+    .map(ListArr)
+    .flatten()
+    .filter(isEnded)
+    .map((t: Task) => prop('sourceURI', t))
+
+//#endregion
+
+//#region Conversions
+
+export const buildPayload = (directories: string[]): SearchPayload => {
+  return {
+    limit: 0,
+    keys: directories.map(replace('_', '-'))
+  }
+}
 
 export const getBatches = (fileExporterUri: string) => (
   payload: SearchPayload
 ): FutureInstance<AppError, MsBatches> =>
   futurV(mockFileExporter)
     .map(ListArr)
-    .map((lb: List<Batch>) => lb.filter(isMediashare))
     .bimap(
       throwErr(at.GetBatches),
-      (output: MsBatches) => id(output) // no id plz
+      (lb: List<Batch>) => lb.filter(isMediashare) // no id plz
     )
+
+//#endregion

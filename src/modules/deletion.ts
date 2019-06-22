@@ -1,25 +1,5 @@
 import * as FileExp from '../modules/fileExporter'
 import fs from 'fs'
-import {
-  filter,
-  pipe,
-  map,
-  flatten,
-  uniq,
-  split,
-  all,
-  head,
-  init,
-  join,
-  prop,
-  isEmpty,
-  not,
-  equals,
-  identity as id,
-  applySpec,
-  last,
-  always
-} from 'ramda'
 import { launchProcess as executeConcurrently } from './concurrency'
 import {
   futureFromNodeback as futurN,
@@ -29,9 +9,13 @@ import {
   log,
   logx
 } from 'ts-functors'
-import { ErrorLocation as at, AppError, ErrorLocation } from './errors'
-import { List, Validation } from 'monet' //
-const ListArr = List.fromArray //
+import {
+  formatErrors,
+  Application as AppError,
+  ErrorLocation as at,
+  FileSystem as FsError
+} from './errors'
+import { List } from 'monet' //
 
 //#region Types
 
@@ -41,7 +25,7 @@ export type DeletionTask = {
 }
 
 export type DeletionResult = {
-  fileDeletionErrors: any
+  fileDeletionErrors: string[]
   folderDeletionErrors: string[]
 }
 
@@ -54,49 +38,25 @@ export const buildTask = (batches: List<FileExp.Batch>): DeletionTask => {
   }
 }
 
-const relevantsError: NodeJS.ErrnoException[] = [
-  {
-    syscall: 'unlink',
-    code: 'ENOENT',
-    errno: -2,
-    name: '',
-    message: ''
-  }
-]
-
-const relevantFileError = (err: any): boolean =>
-  not(equals(prop('code')(err), 'ENOENT'))
-
-const relevantErrorData = (err: NodeJS.ErrnoException): string =>
-  prop('message')(err)
-
 const buildResult = (
-  unlinkErrors: any[],
-  rmdirErrors: AppError[]
+  unlinkErrors: NodeJS.ErrnoException[],
+  rmdirErrors: NodeJS.ErrnoException[]
 ): DeletionResult => {
   return {
-    fileDeletionErrors: ListArr(unlinkErrors)
-      // .map(map(log))
-      .map(x => x[1]) // stopped here
-      // .filter(relevantFileError)
-      .map(relevantErrorData),
-    folderDeletionErrors: []
+    fileDeletionErrors: formatErrors(unlinkErrors),
+    folderDeletionErrors: formatErrors(rmdirErrors)
   }
 }
 
 const unlink = (filePath: string): Promise<any> =>
-  futurN(fs.unlink)(filePath)
-    .mapRej((e: NodeJS.ErrnoException) => throwErr(at.UnlinkFiles)(e))
-    .promise()
+  futurN(fs.unlink)(filePath).promise()
 
 const rmdir = (folderPath: string): Promise<any> =>
-  futurN(fs.rmdir)(folderPath)
-    .mapRej((e: NodeJS.ErrnoException) => throwErr(at.RemoveDirectory)(e))
-    .promise()
+  futurN(fs.rmdir)(folderPath).promise()
 
 export const executeTask = (maxTasks: string) => (
   deletionTask: DeletionTask
-): Future<AppError, [DeletionTask, DeletionResult]> => // fake Left / True Right
+): Future<AppError, [DeletionTask, DeletionResult]> =>
   futureOfP(
     executeConcurrently(
       unlink,
@@ -104,14 +64,14 @@ export const executeTask = (maxTasks: string) => (
       deletionTask.filePathes.toArray()
     )
   )
-    .chain(unlinkErrors =>
+    .chain((unlinkErrors: FsError[]) =>
       futureOfP(
         executeConcurrently(
           rmdir,
           Number(maxTasks),
           deletionTask.directoryPathes.toArray()
         )
-      ).map(rmdirErrors => buildResult(unlinkErrors, rmdirErrors))
+      ).map((rmdirErrors: FsError[]) => buildResult(unlinkErrors, rmdirErrors))
     )
     .bimap(throwErr(at.DeletionTask), deletionresult => [
       deletionTask,

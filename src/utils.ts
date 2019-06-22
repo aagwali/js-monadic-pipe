@@ -7,7 +7,3 @@ export const validationFromUndefined = <T, U>(
   payload: T
 ) => (value: U): Validation<U[], any> =>
   Maybe.fromUndefined(fun(value, payload)).toValidation([value])
-
-// (...args: any[]) => any
-
-// .reduce((acc, validation) => validation.ap(acc.acc()))

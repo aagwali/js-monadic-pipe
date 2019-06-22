@@ -1,4 +1,4 @@
-import { AppError, ErrorLocation as at } from './errors'
+import { Application as AppError, ErrorLocation as at } from './errors'
 import { ListArr, validationFromUndefined as ValidUnd } from '../utils'
 import { prop, values } from 'ramda'
 import {
