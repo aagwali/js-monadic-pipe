@@ -1,6 +1,6 @@
-import * as FileExp from '../modules/fileExporter'
+import * as FileExp from './fileExporter'
 import fs from 'fs'
-import { launchProcess as executeConcurrently } from './concurrency'
+import { launchProcess as executeConcurrently } from '../generics/concurrency'
 import {
   futureFromNodeback as futurN,
   formatError as throwErr,
@@ -14,7 +14,7 @@ import {
   Application as AppError,
   ErrorLocation as at,
   FileSystem as FsError
-} from './errors'
+} from '../generics/errors'
 import { List } from 'monet' //
 
 //#region Types

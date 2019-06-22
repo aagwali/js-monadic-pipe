@@ -1,5 +1,8 @@
 import fs from 'fs'
-import { ErrorLocation as at, Application as AppError } from './errors'
+import {
+  ErrorLocation as at,
+  Application as AppError
+} from '../generics/errors'
 import { filter } from 'ramda'
 import {
   futureFromNodeback as futurN,

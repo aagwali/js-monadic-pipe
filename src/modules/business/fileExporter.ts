@@ -11,9 +11,12 @@ import {
   prop,
   all
 } from 'ramda'
-import { mockFileExporter } from './mocks'
-import { ErrorLocation as at, Application as AppError } from './errors'
-import { postHttp } from './http'
+import { mockFileExporter } from '../mocks/mocks'
+import {
+  ErrorLocation as at,
+  Application as AppError
+} from '../generics/errors'
+import { postHttp } from '../generics/http'
 import {
   futureFromPromise as futurP,
   FutureInstance,

@@ -1,4 +1,4 @@
-import { Batch, TaskStatus } from './fileExporter'
+import { Batch, TaskStatus } from '../business/fileExporter'
 
 export const mockFileExporter: Batch[] = [
   {

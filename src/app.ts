@@ -1,9 +1,9 @@
-import * as Config from './modules/config'
+import * as Config from './modules/generics/config'
 import { futureOfValue as futurV, log, logx, FutureInstance } from 'ts-functors'
-import { buildConfig } from './modules/config'
-import * as MsBuffer from './modules/mediashareBuffer'
-import * as FileExporter from './modules/fileExporter'
-import * as Deletion from './modules/deletion'
+import { buildConfig } from './modules/generics/config'
+import * as MsBuffer from './modules/business/mediashareBuffer'
+import * as FileExporter from './modules/business/fileExporter'
+import * as Deletion from './modules/business/deletion'
 
 const run = (startTime: Date) => (k: Config.Config) =>
   MsBuffer.browseDirectories(k.rawshootPath)

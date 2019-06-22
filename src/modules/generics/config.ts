@@ -1,5 +1,5 @@
 import { Application as AppError, ErrorLocation as at } from './errors'
-import { ListArr, validationFromUndefined as ValidUnd } from '../utils'
+import { ListArr, validationFromUndefined as ValidUnd } from './utils'
 import { prop, values } from 'ramda'
 import {
   formatError as throwFuturErr,
