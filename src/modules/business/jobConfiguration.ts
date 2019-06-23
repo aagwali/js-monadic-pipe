@@ -1,5 +1,5 @@
-import { node as futurN, FutureInstance as Future } from 'fluture'
-import { values, prop } from 'ramda'
+import { node, FutureInstance } from 'fluture'
+import { values } from 'ramda'
 import Joi, { ValidationError } from 'joi'
 import {
   UserSettings,
@@ -15,7 +15,7 @@ import {
   AppFailure,
   AppError,
   formatError,
-  parseValidationError
+  parseJoiValidationError
 } from '../generics/errors'
 
 const mapSettings = (args: Seq): UserSettings => {
@@ -83,7 +83,9 @@ const argsSchema = Joi.object()
   })
   .unknown()
 
-export const buildSettings = (args: Seq): Future<AppError, UserSettings> =>
-  futurN(cb => Joi.validate(args, argsSchema, cb))
-    .mapRej((x: ValidationError) => parseValidationError(x))
+export const buildSettings = (
+  args: Seq
+): FutureInstance<AppError, UserSettings> =>
+  node(cb => Joi.validate(args, argsSchema, cb))
+    .mapRej(parseJoiValidationError)
     .bimap(formatError(AppFailure.BuildSettings), mapSettings)
