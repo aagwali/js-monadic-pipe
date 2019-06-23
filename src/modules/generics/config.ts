@@ -7,30 +7,32 @@ import {
 import { node, FutureInstance } from 'fluture'
 import Joi from 'joi'
 
+//#region Types
 export interface Seq {
   [key: string]: any
 }
 
 export type Config = {
-  bullQueueName: string
+  pcmUri: string
   mongoDbUri: string
 }
+//#endregion
 
-export const mapEnvKeys = (env: Seq): Config => {
+export const mapConfig = (env: Seq): Config => {
   return {
-    bullQueueName: env.BULL_QUEUE_NAME,
+    pcmUri: env.PCM_URI,
     mongoDbUri: env.MONGO_DB_URI
   }
 }
 
 const envSchema = Joi.object()
   .keys({
-    BULL_QUEUE_NAME: Joi.string().required(),
+    PCM_URI: Joi.string().required(),
     MONGO_DB_URI: Joi.string().required()
   })
   .unknown()
 
-export const buildConfig = (env: Seq): FutureInstance<AppError, Config> =>
+export const parseConfig = (env: Seq): FutureInstance<AppError, Config> =>
   node(cb => Joi.validate(env, envSchema, cb))
     .mapRej(parseJoiValidationError)
-    .bimap(formatError(fail.BuildConfig), mapEnvKeys)
+    .bimap(formatError(fail.ParseConfig), mapConfig)

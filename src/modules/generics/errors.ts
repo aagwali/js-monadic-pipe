@@ -3,8 +3,8 @@ import { ValidationError as JoiValidationError } from 'joi'
 import { MongoParseError } from 'mongodb'
 
 export enum AppFailure {
-  BuildSettings = 'Application failed to build job settings from command args',
-  BuildConfig = 'Application failed to build configuration from dotEnv',
+  ParseSettings = 'Application failed to build job settings from command args',
+  ParseConfig = 'Application failed to build configuration from dotEnv',
   ConnectMongo = 'Application failed to connect to mongo database'
 }
 

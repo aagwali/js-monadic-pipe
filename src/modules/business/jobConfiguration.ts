@@ -1,11 +1,9 @@
-import { node, FutureInstance } from 'fluture'
+import { node, FutureInstance, Future } from 'fluture'
 import { values } from 'ramda'
-import Joi, { ValidationError } from 'joi'
+import Joi from 'joi'
 import {
   UserSettings,
   ActionType,
-  ScopeTarget,
-  ChunkType,
   ReportError,
   MasterMode,
   SourceData
@@ -17,20 +15,15 @@ import {
   formatError,
   parseJoiValidationError
 } from '../generics/errors'
+import { futurSpinnerWrapper as logStep } from '../generics/utlis'
 
 const mapSettings = (args: Seq): UserSettings => {
   return {
     action: args.action,
-    scope: {
-      target: args.scopeTarget,
-      chunkType: args.chunkType,
-      chunkValue: args.chunkValue
-    },
+    target: args.target,
     options: {
       errorFilter: args.errorFilter,
       forceRecheck: args.forceRecheck,
-      PCMreplaceNas: args.PCMreplaceNas,
-      VECnonIndexedReport: args.VECnonIndexedReport,
       deprecatePreviousRelation: args.deprecatePreviousRelation,
       indexationOptions: {
         masterMode: args.indexationMasterMode,
@@ -45,34 +38,12 @@ const argsSchema = Joi.object()
     action: Joi.string()
       .valid(values(ActionType))
       .required(),
-    scopeTarget: Joi.string()
-      .valid(values(ScopeTarget))
-      .required(),
-    chunkType: Joi.string()
-      .valid(values(ChunkType))
-      .required(),
-    chunkValue: Joi.any()
-      .required()
-      .when('chunkType', {
-        is: ChunkType.SingleEntry,
-        then: Joi.string()
-      }),
+    target: Joi.string().required(),
     errorFilter: Joi.string()
       .valid(values(ReportError))
       .default(ReportError.None),
     forceRecheck: Joi.boolean().default(false),
-    PCMreplaceNas: Joi.boolean()
-      .default(false)
-      .when('scopeTarget', {
-        is: Joi.not(ScopeTarget.PCM),
-        then: Joi.forbidden()
-      }),
-    VECnonIndexedReport: Joi.boolean()
-      .default(false)
-      .when('scopeTarget', {
-        is: Joi.not(ScopeTarget.VEC),
-        then: Joi.forbidden()
-      }),
+    replaceNas: Joi.boolean().default(false),
     deprecatePreviousRelation: Joi.boolean().default(false),
     indexationMasterMode: Joi.string()
       .valid(values(MasterMode))
@@ -83,9 +54,9 @@ const argsSchema = Joi.object()
   })
   .unknown()
 
-export const buildSettings = (
+export const parseSettings = (
   args: Seq
 ): FutureInstance<AppError, UserSettings> =>
   node(cb => Joi.validate(args, argsSchema, cb))
     .mapRej(parseJoiValidationError)
-    .bimap(formatError(AppFailure.BuildSettings), mapSettings)
+    .bimap(formatError(AppFailure.ParseSettings), mapSettings)
