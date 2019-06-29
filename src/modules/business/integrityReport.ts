@@ -44,8 +44,10 @@ export const generate = (conf: any) => (args: any): any => {
 }
 
 export const repairErrors = (conf: any) => (args: any): any => {
-  // run scripts to fiw integrity errors
+  // delete pv + (deprecate)
+  // queue indexation
   // can target specific errors
+  // can reset a NAS mode
   return undefined
 }
 

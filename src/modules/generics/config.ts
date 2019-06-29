@@ -1,9 +1,4 @@
-import {
-  AppError,
-  AppFailure as fail,
-  formatError,
-  parseJoiValidationError
-} from './errors'
+import { AppError, AppFailure as at, formatError, joiError } from './errors'
 import { node, FutureInstance } from 'fluture'
 import Joi from 'joi'
 
@@ -15,24 +10,28 @@ export interface Seq {
 export type Config = {
   pcmUri: string
   mongoDbUri: string
+  spotUri: string
 }
 //#endregion
 
-export const mapConfig = (env: Seq): Config => {
+export const returnConfig = (env: Seq): Config => {
   return {
     pcmUri: env.PCM_URI,
-    mongoDbUri: env.MONGO_DB_URI
+    mongoDbUri: env.MONGO_DB_URI,
+    spotUri: env.SPOT_URI
   }
 }
 
 const envSchema = Joi.object()
   .keys({
     PCM_URI: Joi.string().required(),
-    MONGO_DB_URI: Joi.string().required()
+    MONGO_DB_URI: Joi.string().required(),
+    SPOT_URI: Joi.string().required()
   })
   .unknown()
 
 export const parseConfig = (env: Seq): FutureInstance<AppError, Config> =>
-  node(cb => Joi.validate(env, envSchema, cb))
-    .mapRej(parseJoiValidationError)
-    .bimap(formatError(fail.ParseConfig), mapConfig)
+  node(cb => Joi.validate(env, envSchema, cb)).bimap(
+    formatError(joiError, at.ParseConfig),
+    returnConfig
+  )

@@ -1,6 +1,9 @@
 import { tap, pipe, always } from 'ramda'
 import { Future, FutureInstance } from 'fluture'
 import ora from 'ora'
+import { Maybe } from 'monet'
+import { AppError, AppFailure } from '../generics/errors'
+
 export const log = tap(console.log)
 export const logx = (x: any) => (y: any) => {
   log(x)
@@ -22,3 +25,18 @@ export const futurSpinnerWrapper = (
         )
       )
     )
+
+export const truthyOrRej = <T>(fun: (x: T) => any, failure: AppFailure) => (
+  payload: T
+): FutureInstance<AppError, T> =>
+  Maybe.fromFalsy(fun(payload)).cata(
+    () =>
+      Future.reject({
+        name: 'unallowed state',
+        message: `execution of ${
+          fun.name
+        } on ${payload} expressed ad a falsy value`,
+        failure
+      }),
+    () => Future.resolve(payload)
+  )

@@ -10,15 +10,10 @@ export enum ReportError {
   None = 'none'
 }
 
-export enum MasterMode {
-  NAS = 'NAS',
-  DAM = 'DAM',
-  DBR = 'DBR'
-}
-
-export enum SourceData {
-  RerunSales = 'rerunSales',
-  PublishedSale = 'publishedSale'
+export type SpotOperation = {
+  label: string
+  date: number
+  detPath?: string
 }
 
 export type UserSettings = {
@@ -26,8 +21,5 @@ export type UserSettings = {
   target: string
   options: {
     errorFilter: ReportError
-    forceRecheck: Boolean
-    indexationOptions?: { masterMode: MasterMode; sourceData: SourceData }
-    deprecatePreviousRelation: Boolean
   }
 }

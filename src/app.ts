@@ -1,16 +1,18 @@
 import { Config } from './modules/generics/config'
 import { parseConfig, Seq } from './modules/generics/config'
-import * as JobConfig from './modules/business/jobConfiguration'
+import * as Job from './modules/business/jobConfiguration'
+import * as Spot from './modules/business/spot'
 import * as Report from './modules/business/integrityReport'
 import { log } from './modules/generics/utlis'
 import { connect as connectDb } from './modules/generics/database'
+import { node, FutureInstance, Future } from 'fluture'
+import { AppError } from './modules/generics/errors'
 
 const args: Seq = require('yargs').argv
 
-const runProcess = (conf: Config) =>
-  JobConfig.parseSettings(args)
-    .map(Report.checkExistence(conf))
-    .map(Report.writePcm(conf))
+const runProcess = (conf: Config): FutureInstance<AppError, any> =>
+  Job.parseSettings(args)
+    .map(Spot.getOperationInfos(conf))
     .map(Report.writeDam(conf))
     .map(Report.writeNas(conf))
     .map(Report.writePim(conf))
