@@ -32,10 +32,8 @@ export const truthyOrRej = <T>(fun: (x: T) => any, failure: AppFailure) => (
   Maybe.fromFalsy(fun(payload)).cata(
     () =>
       Future.reject({
-        name: 'unallowed state',
-        message: `execution of ${
-          fun.name
-        } on ${payload} expressed ad a falsy value`,
+        name: 'Unallowed state',
+        message: 'A guard close triggered a failure',
         failure
       }),
     () => Future.resolve(payload)

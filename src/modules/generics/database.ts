@@ -1,5 +1,9 @@
 import mongoose from 'mongoose'
-import { mongoError, formatError, AppFailure as at } from './errors'
+import {
+  standardError as stdErr,
+  formatError,
+  AppFailure as at
+} from './errors'
 import { encaseP2, FutureInstance } from 'fluture'
 import { Config } from './config'
 import { always } from 'ramda'
@@ -12,4 +16,4 @@ export const connect = (conf: Config): FutureInstance<any, any> =>
       useNewUrlParser: true,
       useFindAndModify: false
     })
-  ).bimap(formatError(mongoError, at.ConnectMongo), always(conf))
+  ).bimap(formatError(stdErr, at.ConnectMongo), always(conf))

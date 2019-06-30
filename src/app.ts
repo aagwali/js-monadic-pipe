@@ -2,7 +2,8 @@ import { Config } from './modules/generics/config'
 import { parseConfig, Seq } from './modules/generics/config'
 import * as Job from './modules/business/jobConfiguration'
 import * as Spot from './modules/business/spot'
-import * as Report from './modules/business/integrityReport'
+import * as Nas from './modules/business/nas'
+import * as Pcm from './modules/business/pcm'
 import { log } from './modules/generics/utlis'
 import { connect as connectDb } from './modules/generics/database'
 import { node, FutureInstance, Future } from 'fluture'
@@ -12,15 +13,12 @@ const args: Seq = require('yargs').argv
 
 const runProcess = (conf: Config): FutureInstance<AppError, any> =>
   Job.parseSettings(args)
-    .map(Spot.getOperationInfos(conf))
-    .map(Report.writeDam(conf))
-    .map(Report.writeNas(conf))
-    .map(Report.writePim(conf))
-    .map(Report.generate(conf))
-    .map(Report.repairErrors(conf))
+    .chain(Spot.getTargetDatas(conf))
+    .chain(Nas.getTargetDatas)
+// .chain(Pcm.getTargetDatas(conf))
 
 export const main = () =>
   parseConfig(process.env)
-    .chain(connectDb)
+    // .chain(connectDb)
     .chain(runProcess)
-    .fork(log, Report.statusExtract)
+    .fork(log, log)

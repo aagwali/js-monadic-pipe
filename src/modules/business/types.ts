@@ -12,8 +12,30 @@ export enum ReportError {
 
 export type SpotOperation = {
   label: string
-  date: number
+  closeDate: string
   detPath?: string
+}
+
+export type NasView = {
+  filePath: string
+  meta: string
+  digest: string
+}
+
+export type PcmOp = {
+  label: string
+  masterMode: string
+}
+
+export type NasFamilies = {
+  [famId: string]: string[]
+}
+
+export type JobReport = {
+  spotOp: SpotOperation
+  nasViews?: NasView[]
+  nasFamilies?: NasFamilies
+  pcmOp?: PcmOp
 }
 
 export type UserSettings = {

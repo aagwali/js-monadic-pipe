@@ -1,45 +1,58 @@
-import { encaseP2, FutureInstance } from 'fluture'
+import { encaseP, FutureInstance } from 'fluture'
 import { Config } from '../generics/config'
 import { truthyOrRej } from '../generics/utlis'
-import { UserSettings, SpotOperation } from './types'
+import { UserSettings, SpotOperation, JobReport } from './types'
 import {
   AppFailure as at,
   AppError,
   formatError,
-  joiError
+  standardError as stdErr
 } from '../generics/errors'
-import { prop, gt } from 'ramda'
+import { prop } from 'ramda'
 import { get as getHttp } from '../generics/http'
+import * as Report from '../business/report'
+import { log } from '../generics/utlis'
 
-const castOperation = (payload: any): SpotOperation => {
+const opRoute = 'operation'
+const opDetailRoute = 'operationdetail'
+const siteIdFr = '1'
+const detPath = '\\Photos\\3 en ligne\\Classique\\DET'
+
+const toSpotOperation = ([spotResp]: any[]): SpotOperation => {
   return {
-    label: payload.jeverrai,
-    date: 2
+    label: spotResp.OperationCode,
+    closeDate: spotResp.StopDate
   }
 }
+
+const addDetPath = (x: SpotOperation) => (spotResp: any): SpotOperation => {
+  return { ...x, detPath: `${spotResp.OperationPath}${detPath}` }
+}
+
+const isClosed = (x: SpotOperation): boolean =>
+  new Date(prop('closeDate', x)) < new Date(Date.now())
+
+const fetchDetPath = (spotUri: string) => (
+  x: SpotOperation
+): FutureInstance<AppError, SpotOperation> =>
+  encaseP(getHttp, `${spotUri}/${opRoute}/${x.label}`).bimap(
+    formatError(stdErr, at.GetOperationPath),
+    addDetPath(x)
+  )
 
 const fetchOperationData = (
   spotUri: string,
   opLabel: string
 ): FutureInstance<AppError, SpotOperation> =>
-  encaseP2(getHttp, `${spotUri}/operationdetail/${opLabel}/1`, {}).bimap(
-    formatError(joiError, at.GetSpotOpInfos),
-    castOperation
+  encaseP(getHttp, `${spotUri}/${opDetailRoute}/${opLabel}/${siteIdFr}`).bimap(
+    formatError(stdErr, at.GetSpotOpInfos),
+    toSpotOperation
   )
 
-export const isClosed = (x: SpotOperation): boolean => gt(1, prop('date', x))
-
-export const getDetPath = (spotUri: string) => (
-  x: SpotOperation
-): FutureInstance<AppError, SpotOperation> =>
-  encaseP2(getHttp, spotUri, {}).bimap(
-    formatError(joiError, at.GetDetPath),
-    castOperation
-  )
-
-export const getOperationInfos = ({ spotUri }: Config) => (
+export const getTargetDatas = ({ spotUri }: Config) => (
   settings: UserSettings
-): FutureInstance<AppError, SpotOperation> =>
+): FutureInstance<AppError, JobReport> =>
   fetchOperationData(spotUri, settings.target)
-    .chain(truthyOrRej(isClosed, at.CheckOpenDate))
-    .chain(getDetPath(spotUri))
+    .chain(truthyOrRej(isClosed, at.CheckStopDate))
+    .chain(fetchDetPath(spotUri))
+    .map(Report.createFromSpotOp)
