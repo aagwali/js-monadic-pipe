@@ -23,12 +23,8 @@
     "strict": false,
     "noImplicitAny": false,
     "noImplicitThis": false,
-    "typeRoots": [
-      "./typings"
-    ],
-    "types": [
-      "node"
-    ],
+    "typeRoots": ["./typings"],
+    "types": ["node"],
     "esModuleInterop": true
   }
 }

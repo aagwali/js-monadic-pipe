@@ -1,16 +1,11 @@
-import { readFileSystem, tryFindPath } from "./steps";
-import { tryBuildConfig, log } from "./utils";
-import { InitialInput, AppSuccess, Config } from "./types";
-import Future from "fluture";
+import { parseConfig } from './modules/generics/config'
+import * as MyModule from './modules/business/moduleName'
+import { log } from './modules/generics/utlis'
 
-const input: InitialInput = { folder: "src" };
+// todo add all signatures
 
-const start = (config: Config) =>
-    Future.of(input)
-        .chain(tryFindPath([config.requiredProp]))
-        .chain(readFileSystem(config))
-        .map(x => new AppSuccess(x))
-        .fork(log, log);
-
-export const validateConfig = () => tryBuildConfig(process.env)
-    .fold(log, start)
+export const main = () =>
+  parseConfig(process.env)
+    .map(MyModule.doSomethingSync)
+    .chain(MyModule.doSomethingAsync)
+    .fork(log, log)
