@@ -8,11 +8,16 @@ import {
 } from '../generics/http'
 import { launchProcess } from '../generics/concurrency'
 
+// to do replace by mediaTasks svc
+// to do set in dotEnv
+// to do add type everywhere
 const authId = 'oredis-vp/aagwali'
 const authPass = 'aavdaavd55.'
 const opRoute = 'api/v1/operations'
 const tasksRoute = 'api/v1/tasks'
 const indexOpts = 'index/VALID?masterMode='
+
+const distinctValues = opList => opList.filter((v, i, a) => a.indexOf(v) === i)
 
 const headers = () => {
   return { headers: basicAuthHeaders(authId, authPass) }
@@ -37,4 +42,4 @@ const callIndexRoute = uri => op =>
     .promise()
 
 export const launchIndex = (opList: string[]): any => ({ pcmUri }: Config) =>
-  encaseP3(launchProcess, callIndexRoute(pcmUri), 3, opList)
+  encaseP3(launchProcess, callIndexRoute(pcmUri), 3, distinctValues(opList))
