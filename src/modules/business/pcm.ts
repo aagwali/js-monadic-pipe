@@ -1,23 +1,40 @@
 import { log } from '../generics/utlis'
-import { encaseP2, FutureInstance } from 'fluture'
-import {
-  AppError,
-  formatError,
-  standardError as stdErr,
-  AppFailure as at
-} from '../generics/errors'
+import { encaseP3, FutureInstance } from 'fluture'
 import { Config } from '../generics/config'
-import { JobReport } from './types'
-import * as Report from './report'
-import { get as getHttp, basicAuthHeaders } from '../generics/http'
+import {
+  post as postHttp,
+  get as getHttp,
+  basicAuthHeaders
+} from '../generics/http'
+import { launchProcess } from '../generics/concurrency'
 
-const authId = 'svc_mediatasks'
-const authPass = "pWNZO'9.XRwF"
-const operationRoute = 'api/v1/operations'
+const authId = 'oredis-vp/aagwali'
+const authPass = 'aavdaavd55.'
+const opRoute = 'api/v1/operations'
+const tasksRoute = 'api/v1/tasks'
+const indexOpts = 'index/VALID?masterMode='
 
-export const getTargetDatas = (conf: Config) => (
-  job: JobReport
-): FutureInstance<AppError, any> =>
-  encaseP2(getHttp, `${conf.pcmUri}/${operationRoute}/${job.spotOp.label}`, {
-    headers: basicAuthHeaders(authId, authPass)
-  }).bimap(formatError(stdErr, at.GetPcmOpInfos), x => x)
+const headers = () => {
+  return { headers: basicAuthHeaders(authId, authPass) }
+}
+
+const getMasterMode = uri => op =>
+  encaseP3(getHttp, `${uri}/${tasksRoute}/${op}`, headers(), []).map(
+    tsk => tsk[0].master_mode
+  )
+
+const launchIndexation = uri => op => mMode =>
+  encaseP3(
+    postHttp,
+    `${uri}/${opRoute}/${op}/${indexOpts}${mMode}`,
+    '',
+    headers()
+  )
+
+const callIndexRoute = uri => op =>
+  getMasterMode(uri)(op)
+    .chain(launchIndexation(uri)(op))
+    .promise()
+
+export const launchIndex = (opList: string[]): any => ({ pcmUri }: Config) =>
+  encaseP3(launchProcess, callIndexRoute(pcmUri), 3, opList)

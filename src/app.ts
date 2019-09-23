@@ -8,17 +8,11 @@ import { log } from './modules/generics/utlis'
 import { connect as connectDb } from './modules/generics/database'
 import { node, FutureInstance, Future } from 'fluture'
 import { AppError } from './modules/generics/errors'
+import { listOp } from './mock'
 
-const args: Seq = require('yargs').argv
-
-const runProcess = (conf: Config): FutureInstance<AppError, any> =>
-  Job.parseSettings(args)
-    .chain(Spot.getTargetDatas(conf))
-    .chain(Nas.getTargetDatas)
-// .chain(Pcm.getTargetDatas(conf))
+const distinctValues = listOp.filter((v, i, a) => a.indexOf(v) === i)
 
 export const main = () =>
   parseConfig(process.env)
-    // .chain(connectDb)
-    .chain(runProcess)
+    .chain(Pcm.launchIndex(distinctValues))
     .fork(log, log)
