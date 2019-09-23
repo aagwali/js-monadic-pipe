@@ -11,8 +11,8 @@ import { futurSpinnerWrapper as logStep } from './utlis'
 
 export const connect = (conf: Config): FutureInstance<any, any> =>
   logStep(
-    [` ⴵ - Connecting to ${conf.mongoDbUri}`, ` ☑ - Connection established`],
-    encaseP2(mongoose.connect, encodeURI(conf.mongoDbUri), {
+    [` ⴵ - Connecting to ${'MONGO_URI_CONF'}`, ` ☑ - Connection established`],
+    encaseP2(mongoose.connect, encodeURI('MONGO_URI_CONF'), {
       useNewUrlParser: true,
       useFindAndModify: false
     })

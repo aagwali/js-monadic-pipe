@@ -1,10 +1,11 @@
 import { prop, head } from 'ramda'
 import { ValidationError as JoiValidationError } from 'joi'
-import { MongoError } from 'mongodb'
+import { MongoError } from 'mongodb' // todo work on this
 import { List } from 'monet'
 
 export enum AppFailure { // why must stop, failure reason ?
   ParseConfig = 'Unable to build configuration from dotEnv',
+  ErrorLocation = 'Details of the error occured at this location',
   ConnectMongo = 'Unable to connect mongo database'
 }
 

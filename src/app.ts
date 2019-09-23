@@ -1,9 +1,11 @@
 import { parseConfig } from './modules/generics/config'
-import * as Pcm from './modules/business/pcm'
+import * as MyModule from './modules/business/moduleName'
 import { log } from './modules/generics/utlis'
-import { opList } from './operationList'
+
+// todo add all signatures
 
 export const main = () =>
   parseConfig(process.env)
-    .chain(Pcm.launchIndex(opList))
+    .map(MyModule.doSomethingSync)
+    .chain(MyModule.doSomethingAsync)
     .fork(log, log)
